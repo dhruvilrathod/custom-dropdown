@@ -1,0 +1,21 @@
+<ul (click)="sectionClicked($event)" #chipsContainer>
+
+    <li 
+        class="chip-container"
+        *ngFor="let chip of chipData; let i = index">
+    
+        <div *ngIf="chip.isFavourite" class="left-section" [title]="'favorite'">
+            <i class="fa fa-star"></i>
+        </div>
+    
+        <div class="main-section">
+            {{ chip.dataVisibleNameValue }}
+        </div>
+    
+        <div class="right-section" *ngIf="chip.canDelete">
+            <i class="fa fa-close"></i>
+        </div>
+    
+    </li>
+
+</ul>

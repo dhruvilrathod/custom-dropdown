@@ -1,0 +1,215 @@
+<div 
+    class="container"
+    [ngClass]="{ 'search-not-allowed': !isSearchAllowed, 'container-disabled': isDisabled, 'container-read-only': readOnlyChips }">
+
+    <div class="wrapper">        
+        <div *ngIf="chipData.length > 0" class="selection-container">
+    
+            <app-multi-object-chips 
+            [chipData]="chipData"    
+            (focusSearch)="focusSearch()">
+            </app-multi-object-chips>
+    
+        </div>
+    
+        <input
+            [ngClass]="{ 'search-not-allowed': !isSearchAllowed }"
+            class="title-query" 
+            type="text"
+            [placeholder]="placeholderKey"
+            [readonly]="!isSearchAllowed ? 'readonly' : null"
+            (input)="queryTrigger($any($event.target).value)"
+            (click)="focusSearch()"
+            #queryBox>
+    </div>
+
+</div>
+
+<div class="list-container">
+
+    <ul *ngIf="!isLoading && (multiObjectData && multiObjectData?.dropDownSections) || (multiObjectDataForQuery && multiObjectDataForQuery?.dropDownSections)">
+
+        <div class="action-button-container">
+            <div class="buttons-container">
+                <button *ngIf="isSelectAllAvailable" (click)="selectAllOptions()">
+                    <span *ngIf="!isAllSelected">{{ 'select-all' }}</span>
+                    <span *ngIf="isAllSelected">{{ 'unselect-all' }}</span>
+                </button>
+            </div>
+            <div class="buttons-container">
+                <button *ngIf="isResetOptionVisible" (click)="selectAllOptions(true)" >
+                    {{ 'reset' }}
+                </button>
+            </div>
+        </div>
+
+        <ng-container *ngIf="!queryState">
+
+            <li *ngFor="let s of multiObjectData.dropDownSections; let sectionindex = index">
+    
+                <ng-container *ngIf="s.isVisible === true">
+    
+                    <div *ngIf="s.sectionNameKey" class="section-details-container">
+        
+                        <input 
+                        *ngIf="s.allowSectionSelection === true"
+                        type="checkbox" 
+                        (change)="sectionSelectionTrigger($any($event.target).checked, s)"
+                        [id]="s.sectionId">
+            
+                        <label 
+                            class=""
+                            [for]="s.sectionId" 
+                            [title]="s.sectionTooltipKey || s.sectionNameKey"
+                            [ngClass]="{ 'selectable': s.allowSectionSelection === true }">
+            
+                            {{ s.sectionNameKey }}
+                        </label>
+        
+                    </div>
+    
+                    <ul>
+                        <ng-container [ngTemplateOutlet]="dropdownTree" [ngTemplateOutletContext]="{ 
+                                $implicit: s.children,
+                                levelIndex: 1,
+                                sectionData: s
+                            }">
+                        </ng-container>
+                    </ul>
+    
+                </ng-container>
+    
+            </li>
+
+        </ng-container>
+
+        <ng-container *ngIf="queryState">
+
+            <ng-container *ngIf="multiObjectDataForQuery">
+
+                <li *ngFor="let s of multiObjectDataForQuery.dropDownSections; let sectionindex = index">
+        
+                    <ng-container *ngIf="s.isVisible === true">
+        
+                        <div *ngIf="s.sectionNameKey" class="section-details-container">
+            
+                            <input 
+                            *ngIf="s.allowSectionSelection === true"
+                            type="checkbox" 
+                            (change)="sectionSelectionTrigger($any($event.target).checked, s)"
+                            [id]="s.sectionId">
+                
+                            <label 
+                                class=""
+                                [for]="s.sectionId" 
+                                [title]="s.sectionTooltipKey || s.sectionNameKey"
+                                [ngClass]="{ 'selectable': s.allowSectionSelection === true }">
+                
+                                {{ s.sectionNameKey }}
+                            </label>
+            
+                        </div>
+        
+                        <ul>
+                            <ng-container [ngTemplateOutlet]="dropdownTree" [ngTemplateOutletContext]="{ 
+                                    $implicit: s.children,
+                                    levelIndex: 1,
+                                    sectionData: s
+                                }">
+                            </ng-container>
+                        </ul>
+        
+                    </ng-container>
+        
+                </li>
+
+            </ng-container>
+
+        </ng-container>
+
+
+    </ul>
+
+    <ng-container *ngIf="!isLoading && (!multiObjectData?.dropDownSections) && (!multiObjectDataForQuery?.dropDownSections)">
+        <div class="no-data-text">
+            {{ noDataMessageKey }}
+        </div>
+    </ng-container>
+
+    <ng-container *ngIf="isLoading">
+        <div class="loading">
+            {{ 'loading' }}
+        </div>
+    </ng-container>
+
+</div>
+
+
+<ng-template #dropdownTree let-data let-levelIndex="levelIndex" let-sectionData="sectionData">
+
+
+    <ng-container *ngIf="!data || data.length ===0">
+        <div class="no-data-text">
+            {{ noDataMessageKey }}
+        </div>
+    </ng-container>
+    
+    <ul [ngStyle]="{ 'margin-left': levelIndex > 1 ? '24px' : '0' }" class="ul-template">
+
+        <li 
+            [ngStyle]="{ 'border-left': levelIndex === 1 ? 'none' : '' }"
+            *ngFor="let op of data; let optionIndex = index">
+
+            <div class="dropdown-section">
+
+                <div class="checkbox-container">
+                    <input 
+                        type="checkbox" 
+                        [checked]="op.isSelected"
+                        [indeterminate]="op.isPartiallySelected && !op.isSelected"
+                        [id]="op.dataUniqueFieldValue"
+                        (change)="optionSelectionTrigger($any($event.target).checked, op, sectionData)">
+                </div>
+    
+                <div 
+                    *ngIf="isMultipleLevel === true"    
+                    class="icon-container" 
+                    [ngClass]=" { 'expandable' : op.dataExpandableValue === true }"
+                    [title]="'expand'" 
+                    (click)="expandTrigger(sectionData, op)">
+                    <ng-container *ngIf="op.dataExpandableValue === true">
+                        <i *ngIf="op.isChildernLoading === false && op.isExpanded === false" class="fa fa-chevron-right"></i>
+                        <i *ngIf="op.isChildernLoading === false && op.isExpanded === true" class="fa fa-chevron-down"></i>
+                        <i *ngIf="op.isChildernLoading === true" class="fa fa-spin fa-spinner fa-spin-pulse"></i>
+                    </ng-container>
+                </div>
+    
+                <div class="icon-container" [title]="'favorite'">
+    
+                    <i *ngIf="op.dataFavouriteValue === true" class="fa fa-star"></i>
+    
+                </div>
+    
+                <div class="title-container">
+                    <label [for]="op.dataUniqueFieldValue" [title]="op.dataTooltipValue">
+                        {{ op.dataVisibleNameValue }}
+                    </label>
+                </div>
+
+            </div>
+
+            <ng-container *ngIf="op.isExpanded === true && op.isChildernLoading === false"
+                [ngTemplateOutlet]="dropdownTree" [ngTemplateOutletContext]="{ 
+                            $implicit: op.children,
+                            levelIndex: (levelIndex + 1),
+                            sectionData: sectionData
+                        }">
+            </ng-container>
+
+        </li>
+
+
+    </ul>
+
+
+</ng-template>
