@@ -1,5 +1,5 @@
-import { Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
-import { SelectionChip } from '../interfaces/multi-object-selection.interface';
+import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
+import { ChipChangeTrigger, SelectionChip } from '../interfaces/multi-object-selection.interface';
 import { UtilsService } from 'src/app/services/utils/utils.service';
 
 @Component({
@@ -7,19 +7,21 @@ import { UtilsService } from 'src/app/services/utils/utils.service';
   templateUrl: './multi-object-chips.component.html',
   styleUrls: ['./multi-object-chips.component.scss']
 })
-export class MultiObjectSelectionChipComponent implements OnInit, OnChanges {
+export class MultiObjectSelectionChipComponent implements OnInit, AfterViewInit {
 
   @ViewChild('chipsContainer') chipsContainer!: ElementRef<HTMLUListElement>;
+  @ViewChild('chip') chip!: ElementRef<HTMLLIElement>;
 
   @Input('chipData') chipData: SelectionChip[] = [];
-  @Input('selectedChipIds') selectedChipIds: (string | number)[] = [];
 
-  @Output() focusSearch: EventEmitter<any> = new EventEmitter<any>();
+  @Output('focusSearch') focusSearch: EventEmitter<boolean> = new EventEmitter<boolean>();
+  @Output('onChipRemove') onChipRemove: EventEmitter<ChipChangeTrigger> = new EventEmitter<ChipChangeTrigger>();
+  @Output('onChipClick') onChipClick: EventEmitter<ChipChangeTrigger> = new EventEmitter<ChipChangeTrigger>();
+  @Output('onChipContextMenu') onChipContextMenu: EventEmitter<ChipChangeTrigger> = new EventEmitter<ChipChangeTrigger>();
 
-  @Output('selectedChipIdsChange') selectedChipIdsChange: EventEmitter<(string | number)[]> = new EventEmitter<(string | number)[]>();
-  @Output('onRemove') onRemove: EventEmitter<any> = new EventEmitter();
-  @Output('onClick') onClick: EventEmitter<any> = new EventEmitter();
-  @Output('onRightClick') onRightClick: EventEmitter<any> = new EventEmitter();
+
+  private _currentChipActiveIndex: number = -1;
+  private _isAnyChipActive: boolean = false;
 
   constructor(
     private _utils: UtilsService
@@ -28,13 +30,79 @@ export class MultiObjectSelectionChipComponent implements OnInit, OnChanges {
   ngOnInit(): void {
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    console.log(changes);
+  ngAfterViewInit(): void {
+    this._registerListeners();
   }
 
   public sectionClicked(e: Event) {
-    if(this.chipsContainer.nativeElement === e.target) {
+    if (this.chipsContainer.nativeElement === e.target) {
+      this.resetActiveChip();
       this.focusSearch.emit();
     }
   }
+
+  public activateChip(chip: SelectionChip) {
+
+    for (let i = 0, chipDataLen = this.chipData.length; i < chipDataLen; i++) {
+      if (this.chipData[i].isActive) {
+        this.chipData[i].isActive = false;
+      }
+      if(this.chipData[i].dataUniqueFieldValue === chip.dataUniqueFieldValue) {
+        this._currentChipActiveIndex = i;
+      }
+    }
+
+    chip.isActive = true;
+    this._isAnyChipActive = true;
+    this.onChipClick.emit({ data: chip });
+  }
+
+  public openContextMenu(e: Event, chip: SelectionChip) {
+    console.log('context menucalled ::', chip);
+    e.preventDefault();
+    this.activateChip(chip);
+    this.onChipContextMenu.emit({ data: chip })
+  }
+
+  public resetActiveChip(): void {
+    for (let i = 0, chipDataLen = this.chipData.length; i < chipDataLen; i++) {
+      if (this.chipData[i].isActive) {
+        this.chipData[i].isActive = false;
+      }
+    }
+    this._currentChipActiveIndex = -1;
+    this._isAnyChipActive = false;
+  }
+
+  private _registerListeners(): void {    
+
+    document.addEventListener("keydown", (e: KeyboardEvent) => {
+
+      if(this._isAnyChipActive && this._currentChipActiveIndex > -1) {
+        if(((e.code === "ArrowLeft" && this._currentChipActiveIndex > 0) || (e.code === "ArrowRight" && this._currentChipActiveIndex < this.chipData.length - 1))) {
+          for (let i = 0, chipDataLen = this.chipData.length; i < chipDataLen; i++) {
+            if (this.chipData[i].isActive) {
+              this.chipData[i].isActive = false;
+              if(e.code === "ArrowLeft") {
+                this.chipData[i-1].isActive = true;
+                this._currentChipActiveIndex = i - 1;
+              } 
+              else if(e.code === "ArrowRight"){
+                this.chipData[i+1].isActive = true;
+                this._currentChipActiveIndex = i + 1;
+              }
+              break;
+            }
+          }
+        }
+        else if (e.code === "Enter" || e.code === "Space") {
+          this.onChipClick.emit({data: this.chipData[this._currentChipActiveIndex]});
+        }
+      }
+      else {
+        e.preventDefault();
+      }
+    });
+  }
+
 }

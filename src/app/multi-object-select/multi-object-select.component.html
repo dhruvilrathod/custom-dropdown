@@ -6,8 +6,12 @@
         <div *ngIf="chipData.length > 0" class="selection-container">
     
             <app-multi-object-chips 
-            [chipData]="chipData"    
-            (focusSearch)="focusSearch()">
+            [chipData]="chipData"
+            (onChipRemove)="chipRemovalTrigger($event)"
+            (focusSearch)="focusSearch()"
+            (onChipClick)="onChipClick.emit($event)"
+            (onChipContextMenu)="onChipContextMenu.emit($event)"
+            #chipsContainer>
             </app-multi-object-chips>
     
         </div>

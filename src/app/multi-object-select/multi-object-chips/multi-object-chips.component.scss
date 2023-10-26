@@ -20,6 +20,12 @@ ul {
         justify-content: space-between;
         transition: inherit;
 
+        &.active-chip {
+            outline: none;
+            border: 1px solid rgba(82, 168, 236, .8);
+            box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(82, 168, 236, .6);    
+        }
+
         .left-section {
             padding: 4px;
             background-color: #ccc;

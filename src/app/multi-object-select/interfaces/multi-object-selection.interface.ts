@@ -47,6 +47,7 @@ export interface DropDownDataSection {
 }
 
 export interface DropDownDataOption {
+    sectionId?: number | string;
     isSelected?: boolean;
     isDisabled?: boolean;
     isExpanded?: boolean;
@@ -70,6 +71,7 @@ export interface DropDownDataOption {
 }
 
 export interface SelectionChip {
+    sectionId?: number | string;
     isDisabled?: boolean;
     canDelete?: boolean;
     isHighlighted?: boolean;
@@ -94,4 +96,9 @@ export interface DataRequester {
     };
     onResult: Function;
     onError?: Function;
+}
+
+export interface ChipChangeTrigger {
+    data: DropDownDataSection | DropDownDataOption | SelectionChip;
+    section?: DropDownDataSection
 }

@@ -28,12 +28,12 @@ export class AppComponent implements OnInit {
     this._httpService.getData().subscribe({
       next: (value) => {
         this.dataToPass = value;
-        this.sectionDataToPass = {
-          allowSectionSelection: true,
-          sectionId: 11,
-          sectionTooltipKey: 'tooool',
-          sectionNameKey: 'section 1211',
-        }
+        // this.sectionDataToPass = {
+        //   allowSectionSelection: true,
+        //   sectionId: 11,
+        //   sectionTooltipKey: 'tooool',
+        //   sectionNameKey: 'section 1211',
+        // }
       },
       error: (err) => { console.log(err); },
       complete: () => {
