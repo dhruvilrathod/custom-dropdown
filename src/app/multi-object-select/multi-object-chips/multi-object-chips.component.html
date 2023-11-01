@@ -17,7 +17,7 @@
                 {{ chip.dataVisibleNameValue }}
             </div>
         
-            <div class="right-section" (click)="onChipRemove.emit({data: chip})" *ngIf="chip.canDelete">
+            <div class="right-section" (click)="removeChip(chip)" *ngIf="chip.canDelete">
                 <i class="fa fa-close"></i>
             </div>
         

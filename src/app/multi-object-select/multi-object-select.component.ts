@@ -24,13 +24,15 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges {
 
   @Input('preSelectedObjectIds') preSelectedObjectIds: (string | number)[] = [];
 
+  @Input('preSelectedChips') preSelectedChips: any[] = [];
+
   @Input('isRequired') isRequired: boolean = true; // done
   @Input('isDisabled') isDisabled: boolean = false; // done
   @Input('minSelectCount') minSelectCount: number = 1; // done
   @Input('maxSelectCount') maxSelectCount!: number; // done
   @Input('isSingularInput') isSingularInput: boolean = false; // done
-  @Input('readOnlyChips') readOnlyChips: boolean = false;
-  @Input('isCustomInputAllowed') isCustomInputAllowed: boolean = false;
+  @Input('readOnlyChips') readOnlyChips: boolean = false; // done
+  @Input('isCustomInputAllowed') isCustomInputAllowed: boolean = false; // done
   @Input('isSearchAllowed') isSearchAllowed: boolean = true; //done
   @Input('isAsynchronousSearch') isAsynchronousSearch: boolean = true; // done
   @Input('isResetOptionVisible') isResetOptionVisible: boolean = true; // done
@@ -56,6 +58,8 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges {
   @Output('onChipContextMenu') onChipContextMenu: EventEmitter<ChipChangeTrigger> = new EventEmitter<ChipChangeTrigger>(); // done
 
   public chipData: SelectionChip[] = [];
+
+  public customChipData: SelectionChip[] = [];
 
   public userAddedChipIds: (string | number)[] = [];
 
@@ -87,11 +91,16 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     console.log("changes");
 
-    if (changes['data'].currentValue && this.dataTypeId !== -1) {
+    if (changes['data'] && changes['data'].currentValue && this.dataTypeId !== -1) {
       this.multiObjectData = this.prepareDropDownData(this.data, this.dataTypeId);
       this.setPreSelectedValues(this.multiObjectData.dropDownSections);
       this._setFlattenOptionsForQuery(this.multiObjectData.dropDownSections);
       this.isLoading = false;
+    }
+
+    if (changes['preSelectedChips'] && changes['preSelectedChips'].currentValue && this.dataTypeId !== -1) {
+      console.log(this.preSelectedChips);
+      
     }
   }
 
@@ -100,7 +109,14 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges {
 
     if (!this.isDisabled && !this.isDisabled && !this._isDropdownOpened) {
       this._isDropdownOpened = true;
-      this.chipsContainer.resetActiveChip();
+    }
+    this.chipsContainer && this.chipsContainer.resetActiveChip();
+  }
+
+  public activateLastChip(event: Event) {    
+    if(((event as InputEvent).inputType === "deleteContentBackward" || (event as InputEvent).inputType === "deleteWordBackward") && (event.target as any).value === "") {
+      this.chipData[this.chipData.length - 1] && this.chipsContainer.activateChip(this.chipData[this.chipData.length - 1]);
+      this.queryBox.nativeElement.blur();
     }
   }
 
@@ -139,7 +155,7 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges {
           queryString: searchVal,
         },
         onResult: (data: any[]) => {
-          console.log(data);
+          
           if (!data || !data.length || data.length === 0) {
             data = [];
           }
@@ -151,6 +167,33 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges {
           this.isLoading = false;
         }
       });
+    }
+  }
+
+  public addCustomChip(name: string): void {
+
+    if (this.isCustomInputAllowed === false || name === '' || name === undefined || name === null) {
+      return;
+    }
+    else {
+      this.queryState = true;
+    }
+
+    if(this.isCustomInputAllowed) {
+      let newOptionData: DropDownDataOption = {
+        dataVisibleNameValue: name,
+        dataTooltipValue: name,
+        dataUniqueFieldValue: new Date().getTime()
+      } 
+      let chip = this._createChipData(newOptionData, true);
+      this.customChipData.push(chip);
+      this.chipData.push(chip);
+      this.queryBox.nativeElement.value = '';
+      this.queryState = false;
+    }
+    else {
+      this.queryState = false;
+      return;
     }
   }
 
@@ -313,7 +356,14 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges {
 
       this._valueSelectTreeTraversal(selected, sectionData.children, optionsData);
       this._modifyChipSection(this.multiObjectData.dropDownSections);
-
+      
+      if(!this.isSingularInput && selected) {
+        let found = false;
+        for(let i = 0, customChipDataLen = this.customChipData.length; i < customChipDataLen; i++) {
+          found = !!this.chipData.find(val => val.dataUniqueFieldValue === this.customChipData[i].dataUniqueFieldValue);
+        }
+        !found && this._appendCustomChips();
+      }
     }
   }
 
@@ -343,6 +393,19 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges {
   }
 
   public chipRemovalTrigger(chipChange: ChipChangeTrigger) {
+    
+    if(chipChange.data.isCustom) {
+      for(let i = 0, customChipDataLen = this.customChipData.length; i < customChipDataLen; i++) {
+        console.log(this.customChipData[i], chipChange.data);
+        if(this.customChipData[i].dataUniqueFieldValue === chipChange.data.dataUniqueFieldValue) {
+          this.chipData.splice(this.chipData.indexOf(this.customChipData[i]), 1);
+          this.customChipData.splice(i, 1);
+          this.onChipRemove.emit({ data: chipChange.data });
+          return;
+        }
+      }
+    }
+
     for(let i = 0, flattenObjectLen = this._flattenDropdownOptions.length; i < flattenObjectLen; i++) {
       if(this._flattenDropdownOptions[i].dataUniqueFieldValue === chipChange.data.dataUniqueFieldValue) {
         this._flattenDropdownOptions[i].isSelected = false;
@@ -365,6 +428,9 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges {
     }
     if (this.isSingularInput && !this.maxSelectCount || this.maxSelectCount > 1) {
       this.maxSelectCount = 1;
+    }
+    if(this.isSingularInput) {
+      this.isCustomInputAllowed = false;
     }
   }
 
@@ -513,6 +579,10 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges {
     }
   }
 
+  private _appendCustomChips() {
+    this.chipData.push(...this.customChipData);
+  }
+
   private _allSelectTrigger(triggerValue: boolean, sectionData?: DropDownDataSection) {
 
     this.isAllSelected = triggerValue;
@@ -527,6 +597,7 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges {
           this.multiObjectData.dropDownSections[i].children[j].isSelected = true;
           this._valueSelectTreeTraversal(triggerValue, this.multiObjectData.dropDownSections[i].children, this.multiObjectData.dropDownSections[i].children[j]);
           this._modifyChipSection(this.multiObjectData.dropDownSections[i].children, triggerValue);
+          triggerValue ? this._appendCustomChips() : this.customChipData = [];
         }
       }
     }
@@ -536,6 +607,7 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges {
         sectionData.children[j].isSelected = true;
         this._valueSelectTreeTraversal(triggerValue, sectionData.children, sectionData.children[j]);
         this._modifyChipSection(sectionData.children, triggerValue);
+        triggerValue ? this._appendCustomChips() : this.customChipData = [];
       }
     }
 
@@ -553,7 +625,7 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges {
     }
   }
 
-  private _createChipData(optionData: DropDownDataOption): SelectionChip {
+  private _createChipData(optionData: DropDownDataOption, isCustomChip = false): SelectionChip {
 
     return {
       isDisabled: optionData.isDisabled ? true : false,
@@ -561,6 +633,7 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges {
       canDelete: this.readOnlyChips ? false : optionData.isDisabled ? false : true,
       isHighlighted: false,
       isActive: false,
+      isCustom: isCustomChip,
       isHidden: !optionData.isVisible ? true : false,
       isSingular: this.isSingularInput ? true : optionData.isSingular ? true : false,
       dataUniqueFieldValue: this._utils.propertyAccess(optionData, ["dataUniqueFieldValue"]),

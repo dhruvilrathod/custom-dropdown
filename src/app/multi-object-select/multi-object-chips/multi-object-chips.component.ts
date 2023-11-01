@@ -74,11 +74,16 @@ export class MultiObjectSelectionChipComponent implements OnInit, AfterViewInit 
     this._isAnyChipActive = false;
   }
 
+  public removeChip(chip: SelectionChip, reset: boolean = true) {
+    this.onChipRemove.emit({data: chip});
+    reset && this.resetActiveChip();
+  }
+
   private _registerListeners(): void {    
 
     document.addEventListener("keydown", (e: KeyboardEvent) => {
 
-      if(this._isAnyChipActive && this._currentChipActiveIndex > -1) {
+      if(this.chipData.length > 0 && this._isAnyChipActive && this._currentChipActiveIndex > -1) {
         if(((e.code === "ArrowLeft" && this._currentChipActiveIndex > 0) || (e.code === "ArrowRight" && this._currentChipActiveIndex < this.chipData.length - 1))) {
           for (let i = 0, chipDataLen = this.chipData.length; i < chipDataLen; i++) {
             if (this.chipData[i].isActive) {
@@ -95,12 +100,27 @@ export class MultiObjectSelectionChipComponent implements OnInit, AfterViewInit 
             }
           }
         }
-        else if (e.code === "Enter" || e.code === "Space") {
+        else if (e.code === "Enter" || e.code === "NumpadEnter" || e.code === "Space") {
           this.onChipClick.emit({data: this.chipData[this._currentChipActiveIndex]});
         }
-      }
-      else {
-        e.preventDefault();
+        else if(e.code === "Backspace" || e.code === "Delete") {
+          console.log(this.chipData, this._currentChipActiveIndex);
+
+          this.chipData[this._currentChipActiveIndex].isActive = false;
+          this.removeChip(this.chipData[this._currentChipActiveIndex], false);
+          
+          if(this._currentChipActiveIndex - 1 >= 0) {
+            console.log('if');
+            
+            this._currentChipActiveIndex--;
+            this.chipData[this._currentChipActiveIndex].isActive = true;
+          }
+          else if(this._currentChipActiveIndex + 1 <= this.chipData.length) {
+            console.log('esle',this.chipData[this._currentChipActiveIndex], this._currentChipActiveIndex);
+            
+            this.chipData[this._currentChipActiveIndex].isActive = true;
+          }
+        }
       }
     });
   }

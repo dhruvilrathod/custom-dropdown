@@ -77,6 +77,7 @@ export interface SelectionChip {
     isHighlighted?: boolean;
     isFavourite?: boolean;
     isActive?: boolean;
+    isCustom?: boolean;
     isHidden?: boolean;
     isSingular?: boolean;
     dataUniqueFieldValue?: string | number;

@@ -22,4 +22,8 @@ export class HttpService {
     return this._http.get('http://localhost:3000/search');
   }
 
+  public getPreselected() {
+    return this._http.get('http://localhost:3000/data4');
+  }
+
 }

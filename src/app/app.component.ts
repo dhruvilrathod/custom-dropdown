@@ -16,6 +16,8 @@ export class AppComponent implements OnInit {
 
   public dataToPass!: any;
 
+  public preSelectedChips: any[] = [];
+
   public sectionDataToPass:any;
 
   constructor(
@@ -37,7 +39,15 @@ export class AppComponent implements OnInit {
       },
       error: (err) => { console.log(err); },
       complete: () => {
-        this.loading = false;
+
+        this._httpService.getPreselected().subscribe({
+          next: (data: any) => { this.preSelectedChips = data },
+          error: (err) => { console.log(err); },
+          complete: () => {
+            this.loading = false;
+          }
+        });
+
       }
     })
   }
