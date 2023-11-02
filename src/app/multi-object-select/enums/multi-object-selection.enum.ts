@@ -53,3 +53,10 @@ export enum DataTotalDocsSrcFields {
     PROJECT_SELECTION = "",
     DIST_SELECTION = ""
 }
+
+export enum DataPathIdsSrcFields {
+    FOLDER_SELECTION = "path",
+    FORM_SELECTION = "",
+    PROJECT_SELECTION = "",
+    DIST_SELECTION = ""
+}

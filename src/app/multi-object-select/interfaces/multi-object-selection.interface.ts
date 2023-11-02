@@ -56,7 +56,7 @@ export interface DropDownDataOption {
     levelIndex?: number;
     isPartiallySelected?: boolean;
     isVisible?: boolean;
-    dataUniqueFieldValue?: any;
+    dataUniqueFieldValue?: string | number;
     dataVisibleNameValue?: any;
     dataTooltipValue?: any;
     dataExpandableValue?: boolean;
@@ -86,6 +86,7 @@ export interface SelectionChip {
     dataExpandableValue?: boolean;
     dataFavouriteValue?: boolean;
     dataTotalDocsValue?: number;
+    parentUniqueIdsValue?: (string | number)[];
     [key: string]: any;
 }
 

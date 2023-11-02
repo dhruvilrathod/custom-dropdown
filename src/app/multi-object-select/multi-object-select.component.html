@@ -37,13 +37,13 @@
 
         <div class="action-button-container">
             <div class="buttons-container">
-                <button *ngIf="isSelectAllAvailable && !isSingularInput" (click)="selectAllOptions()">
+                <button *ngIf="isSelectAllAvailable && !isSingularInput && !readOnlyChips" (click)="selectAllOptions()">
                     <span *ngIf="!isAllSelected">{{ 'select-all' }}</span>
                     <span *ngIf="isAllSelected">{{ 'unselect-all' }}</span>
                 </button>
             </div>
             <div class="buttons-container">
-                <button *ngIf="isResetOptionVisible" (click)="selectAllOptions(true)" >
+                <button *ngIf="isResetOptionVisible && !readOnlyChips" (click)="selectAllOptions(true)" >
                     {{ 'reset' }}
                 </button>
             </div>
