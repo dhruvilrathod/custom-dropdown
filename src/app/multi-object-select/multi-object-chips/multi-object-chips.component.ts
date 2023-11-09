@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { ChipChangeTrigger, SelectionChip } from '../interfaces/multi-object-selection.interface';
 import { UtilsService } from 'src/app/services/utils/utils.service';
 
@@ -7,7 +7,7 @@ import { UtilsService } from 'src/app/services/utils/utils.service';
   templateUrl: './multi-object-chips.component.html',
   styleUrls: ['./multi-object-chips.component.scss']
 })
-export class MultiObjectSelectionChipComponent implements OnInit, AfterViewInit {
+export class MultiObjectSelectionChipComponent implements OnInit, AfterViewInit, OnDestroy {
 
   @ViewChild('chipsContainer') chipsContainer!: ElementRef<HTMLUListElement>;
   @ViewChild('chip') chip!: ElementRef<HTMLLIElement>;
@@ -32,6 +32,11 @@ export class MultiObjectSelectionChipComponent implements OnInit, AfterViewInit 
 
   ngAfterViewInit(): void {
     this._registerListeners();
+  }
+
+  ngOnDestroy(): void {
+    this.resetActiveChip();
+    this.focusSearch.emit();  
   }
 
   public sectionClicked(e: Event) {

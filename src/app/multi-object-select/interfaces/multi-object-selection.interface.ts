@@ -42,7 +42,8 @@ export interface DropDownDataSection {
     dataChildrenSrc?: string[];
     dataFavouriteSrc?: string[];
     dataTotalDocsSrc?: string[];
-    children: DropDownDataOption[];
+    dataParentUniqueIdsSrc?: string[];
+    children?: DropDownDataOption[];
     [key: string]: any; // add section data received from API object assign
 }
 
@@ -62,6 +63,7 @@ export interface DropDownDataOption {
     dataExpandableValue?: boolean;
     dataFavouriteValue?: any;
     dataTotalDocsValue?: number;
+    parentUniqueIdsValue?: (string | number)[];
     children?: DropDownDataOption[];
     onExpand?: Function;
     onCollaps?: Function;
