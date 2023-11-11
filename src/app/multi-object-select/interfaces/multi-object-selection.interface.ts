@@ -14,7 +14,6 @@ export interface MultiObjectSelection {
     noDataMessageKey?: string;
     isMultipleLevel?: boolean;
     isAsynchronouslyExpandable?: boolean;
-    dataTypeId: number;
     isCustomAllSelectOption?: boolean,
     customAllSelectOptionUniqueId?: string | number,
     customAllSelectOptionNameKey?: string,
@@ -89,6 +88,7 @@ export interface SelectionChip {
     dataFavouriteValue?: boolean;
     dataTotalDocsValue?: number;
     parentUniqueIdsValue?: (string | number)[];
+    originalData?: DropDownDataOption;
     [key: string]: any;
 }
 

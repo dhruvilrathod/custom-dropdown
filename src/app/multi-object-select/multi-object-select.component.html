@@ -60,6 +60,24 @@
 
         <ng-container *ngIf="!queryState">
 
+            <li *ngIf="isCustomAllSelectOption">
+                <div class="section-details-container">
+                    <input 
+                    type="checkbox" 
+                    (change)="selectAllOptions(!$any($event.target).checked)"
+                    [id]="customAllSelectOptionUniqueId">
+        
+                    <label 
+                        class="selectable"
+                        [for]="customAllSelectOptionUniqueId" 
+                        [title]="customAllSelectOptionNameKey">
+        
+                        {{ customAllSelectOptionNameKey }}
+                    </label>
+    
+                </div>
+            </li>
+
             <li *ngFor="let s of multiObjectData.dropDownSections; let sectionindex = index">
     
                 <ng-container *ngIf="s.isVisible === true">
@@ -137,6 +155,12 @@
                     </ng-container>
         
                 </li>
+
+                <ng-container *ngIf="searchLoading">
+                    <div class="loading">
+                        {{ 'loading more results...' }}
+                    </div>
+                </ng-container>
 
             </ng-container>
 

@@ -3,6 +3,7 @@ import { HttpService } from './services/http/http.service';
 import { DataRequester } from './multi-object-select/interfaces/multi-object-selection.interface';
 import { MultiObjectSelectionComponent } from './multi-object-select/multi-object-select.component';
 import { DataTooltipSrcFields, DataUniqueSrcFields, DataVisibleNameSrcFields, DataExpandableSrcFields, DataChildrenSrcFields, DataFavouriteSrcFields, DataTotalDocsSrcFields, DataPathIdsSrcFields } from './multi-object-select/enums/multi-object-selection.enum';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -48,7 +49,7 @@ export class AppComponent implements OnInit {
           dataFavouriteSrc: DataFavouriteSrcFields.FOLDER_SELECTION.split("/"),
           dataTotalDocsSrc: DataTotalDocsSrcFields.FOLDER_SELECTION.split("/"),
           dataParentUniqueIdsSrc: DataPathIdsSrcFields.FOLDER_SELECTION.split("/"),
-          allowSectionSelection: true,
+          allowSectionSelection: false,
           sectionTooltipKey: "my section eeee",
           sectionNameKey: "sectionnn name"
         }, value as any[]);
@@ -56,14 +57,10 @@ export class AppComponent implements OnInit {
         let section2 = MultiObjectSelectionComponent.createSection({
           dataUniqueFieldSrc: ["id"],
           dataVisibleNameSrc: ["name"],
-          allowSectionSelection: true,
+          allowSectionSelection: false,
           sectionTooltipKey: "my section 333",
           sectionNameKey: "sectionnn 222 name"
         }, [
-          {
-            id: "-1",
-            name: "all folders"
-          },
           {
             id: "-2",
             name: "template folders"
@@ -71,23 +68,26 @@ export class AppComponent implements OnInit {
           {
             id: "-3",
             name: "favorite folders"
+          },
+          {
+            id: "-4",
+            name: "favorite folders"
           }
         ]);
         console.log(section1);
-        this.dataToPass = [section1, section2];
-
+        this.dataToPass = [section2, section1];
       },
       error: (err) => { console.log(err); },
       complete: () => {
-        this.loading = false;
+        // this.loading = false;
 
-        // this._httpService.getPreselected().subscribe({
-        //   next: (data: any) => { this.preSelectedChips = data },
-        //   error: (err) => { console.log(err); },
-        //   complete: () => {
-        //     this.loading = false;
-        //   }
-        // });
+        this._httpService.getPreselected().subscribe({
+          next: (data: any) => { this.preSelectedChips = data },
+          error: (err) => { console.log(err); },
+          complete: () => {
+            this.loading = false;
+          }
+        });
 
       }
     })
@@ -97,7 +97,7 @@ export class AppComponent implements OnInit {
     console.log(message);
   }
 
-  public finalDataReceived(data: (string | number)[]) {
+  public finalDataReceived(data: any[]) {
     console.log(data);
   }
 
@@ -132,13 +132,14 @@ export class AppComponent implements OnInit {
 
   }
 
+  searchQuerySubscription!: Subscription;
   searchValue(requestData: DataRequester) {
-
+    this.searchQuerySubscription && this.searchQuerySubscription.unsubscribe && this.searchQuerySubscription.unsubscribe();
     //cancel any ongonig search call
-    this._httpService.getSearchResults().subscribe({
+    this.searchQuerySubscription = this._httpService.getSearchResults().subscribe({
       next: (data) => { requestData.onResult(data) },
       error: () => { requestData.onError!() }
-    })
+    });
   }
 
 }
