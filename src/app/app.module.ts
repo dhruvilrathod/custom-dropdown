@@ -6,12 +6,14 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { MultiObjectSelectionComponent } from './multi-object-select/multi-object-select.component';
 import { MultiObjectSelectionChipComponent } from './multi-object-select/multi-object-chips/multi-object-chips.component';
+import { MultiObjectDropdownComponent } from './multi-object-select/multi-object-dropdown/multi-object-dropdown.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     MultiObjectSelectionComponent,
-    MultiObjectSelectionChipComponent
+    MultiObjectSelectionChipComponent,
+    MultiObjectDropdownComponent
   ],
   imports: [
     BrowserModule,

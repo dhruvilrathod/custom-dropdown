@@ -17,7 +17,6 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges {
   @ViewChild('chipsContainer') chipsContainer!: MultiObjectSelectionChipComponent;
 
   @Input('data') data: any[] = [];
-  @Input('dataTypeId') dataTypeId: number = -1;
   @Input('globalLoading') globalLoading: boolean = false;
   @Input('preSelectedObjectIds') preSelectedObjectIds: (string | number)[] = [];
   @Input('preSelectedChips') preSelectedChips: any[] = [];
@@ -41,7 +40,6 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges {
   @Input('isCustomAllSelectOption') isCustomAllSelectOption: boolean = false; // done
   @Input('customAllSelectOptionUniqueId') customAllSelectOptionUniqueId!: string | number; // done
   @Input('customAllSelectOptionNameKey') customAllSelectOptionNameKey: string = ''; // done
-  @Input('sectionConfigurationObject') sectionConfigurationObject!: DropDownDataSection; // to be setup
 
   @Output('selectionChange') selectionChange: EventEmitter<SelectionChip[]> = new EventEmitter<SelectionChip[]>();
   @Output('errorMessage') errorMessage: EventEmitter<string> = new EventEmitter<string>();
@@ -87,10 +85,14 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges {
 
   private _isDropdownOpened: boolean = false;
 
+  private static _this: MultiObjectSelectionComponent;
+
 
   constructor(
     private _utils: UtilsService
-  ) { }
+  ) { 
+    MultiObjectSelectionComponent._this = this;
+  }
 
   ngOnInit(): void {
     this._init();
@@ -99,7 +101,7 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
 
 
-    if (changes['data'] && changes['data'].currentValue && this.dataTypeId !== -1) {
+    if (changes['data'] && changes['data'].currentValue) {
       this.multiObjectData = this.prepareDropDownData(this.data);
       this.setPreSelectedValues(this.multiObjectData.dropDownSections);
       this._setFlattenOptionsForQuery(this.multiObjectData.dropDownSections);
@@ -107,11 +109,9 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges {
       this.isLoading = false;
     }
 
-    if (changes['preSelectedChips'] && changes['preSelectedChips'].currentValue && this.dataTypeId !== -1) {
-
-
-      let preFilledChips = this._preparePrefilledChipsData(this.preSelectedChips);
-      this.setPreSelectedValues(preFilledChips, true);
+    if (changes['preSelectedChips'] && changes['preSelectedChips'].currentValue) {
+      
+      this.setPreSelectedValues(changes['preSelectedChips'].currentValue, true);
     }
   }
 
@@ -159,6 +159,9 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges {
 
       if (founded.length > 0) {
         this.multiObjectDataForQuery = this.prepareDropDownData(founded, true);
+      }
+      else {
+        this.multiObjectDataForQuery = this.prepareDropDownData([], true);
       }
     }
 
@@ -270,6 +273,9 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges {
 
   public prepareDropDownOptions(sectionData: DropDownDataSection, optionsData: DropDownDataOption[], currentLevel?: number, isQuery: boolean = false): DropDownDataOption[] {
 
+    if(!sectionData || !optionsData || !optionsData.length || optionsData.length <= 0) {
+      return [];
+    }
 
     let optionIds: (string | number)[] = [];
     for (let i = 0, chipDataLen = this.chipData.length; i < chipDataLen; i++) {
@@ -561,33 +567,6 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges {
     }
   }
 
-  private _preparePrefilledChipsData(data: any[]): SelectionChip[] {
-    let preFilledChips: SelectionChip[] = [];
-
-    switch (this.dataTypeId) {
-      case MultiObjectSelectionTypeId.FOLDER_SELECTION:
-        for (let i = 0, dataLen = data.length; i < dataLen; i++) {
-          let chip: SelectionChip = {
-            dataFavouriteValue: this._utils.propertyAccess(data[i], DataFavouriteSrcFields.FOLDER_SELECTION.split("/")),
-            dataUniqueFieldValue: this._utils.propertyAccess(data[i], DataUniqueSrcFields.FOLDER_SELECTION.split("/")),
-            dataTooltipValue: this._utils.propertyAccess(data[i], DataTooltipSrcFields.FOLDER_SELECTION.split("/")),
-            dataVisibleNameValue: this._utils.propertyAccess(data[i], DataVisibleNameSrcFields.FOLDER_SELECTION.split("/")),
-            parentUniqueIdsValue: this._utils.propertyAccess(data[i], DataPathIdsSrcFields.FOLDER_SELECTION.split("/")),
-            canDelete: this.readOnlyChips ? false : true,
-            originalData: data[i]
-          }
-          preFilledChips.push(chip);
-        }
-
-        break;
-
-      default:
-        break;
-
-    };
-    return preFilledChips;
-  }
-
   private _checkPrefilledChips(optionsData: DropDownDataOption[], sectionData: DropDownDataSection) {
 
     if (optionsData && optionsData.length > 0) {
@@ -696,7 +675,7 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges {
         let chipOptionData: SelectionChip = this._createChipData(<DropDownDataOption>data[i])
 
 
-        data[i].dataVisibleNameValue && this.chipData.push(chipOptionData);
+        data[i].dataVisibleNameValue && (data[i].levelIndex === (0 || 1 || undefined)) && this.chipData.push(chipOptionData);
 
         data[i].children && this._modifyChipSection(data[i].children!, true);
 
@@ -772,6 +751,23 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges {
             }
           }
           this._modifyChipSection(data[i].children!);
+          
+          allChildrenSelected = !data[i].children!.some(val => val.isSelected === false);
+          
+          if(allChildrenSelected && data[i].levelIndex && data[i].levelIndex > 0 && allChildrenSelected) {
+
+            for (let c = 0, childrenLen = data[i].children!.length; c < childrenLen; c++) {
+              for (let j = 0, chipDataLen = this.chipData.length; j < chipDataLen; j++) {
+                if (this.chipData[j].dataUniqueFieldValue === data[i].children![c].dataUniqueFieldValue) {
+                  this.chipData.splice(j, 1);
+  
+                  this.onChipRemove.emit({ data: data[i].children![c] })
+                  break;
+                }
+              }
+            }
+          }
+
         }
 
         else {
@@ -923,9 +919,29 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges {
     // return true
   }
 
-  static createSection(sectionConfig: DropDownDataSection, data: any[]): DropDownDataSection {
+  public static createSection(sectionConfig: DropDownDataSection, data: any[]): DropDownDataSection {
     sectionConfig.children = data;
     sectionConfig.isVisible === undefined && (sectionConfig.isVisible = true);
     return sectionConfig;
+  }
+
+  public static preparePrefilledChipsData(sectionConfig: DropDownDataSection, data: any[]): SelectionChip[] {
+    
+    let preFilledChips: SelectionChip[] = [];
+
+      for (let i = 0, dataLen = data.length; i < dataLen; i++) {
+        let chip: SelectionChip = {
+          dataFavouriteValue: MultiObjectSelectionComponent._this._utils.propertyAccess(data[i], sectionConfig.dataFavouriteSrc!),
+          dataUniqueFieldValue: MultiObjectSelectionComponent._this._utils.propertyAccess(data[i], sectionConfig.dataUniqueSrc!),
+          dataTooltipValue: MultiObjectSelectionComponent._this._utils.propertyAccess(data[i], sectionConfig.dataTooltipSrc!),
+          dataVisibleNameValue: MultiObjectSelectionComponent._this._utils.propertyAccess(data[i], sectionConfig.dataVisibleNameSrc!),
+          parentUniqueIdsValue: MultiObjectSelectionComponent._this._utils.propertyAccess(data[i], sectionConfig.dataParentUniqueIdsSrc!),
+          canDelete: MultiObjectSelectionComponent._this.readOnlyChips ? false : true,
+          originalData: data[i]
+        }
+        preFilledChips.push(chip);
+      }
+
+    return preFilledChips;
   }
 }
