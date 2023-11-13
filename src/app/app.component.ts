@@ -146,6 +146,10 @@ export class AppComponent implements OnInit {
     console.log('received event for onSelectAll:', e);
   }
 
+  public onChipContextMenu(e: any) {
+    console.log(e);
+  }
+
   loadChildren(requestData: DataRequester): void {
 
     let endPoint = `data${requestData.preparedData.optionData!.levelIndex! + 1}`

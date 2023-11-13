@@ -17,12 +17,6 @@ export interface MultiObjectSelection {
     isCustomAllSelectOption?: boolean,
     customAllSelectOptionUniqueId?: string | number,
     customAllSelectOptionNameKey?: string,
-    // onChipAdd?: Function;
-    // onChipRemove?: Function;
-    // onChipClick?: Function;
-    // onQuerySeach?: Function;
-    // onReset?: Function;
-    // onSelectAll?: Function;
     [key: string]: any;
     dropDownSections: DropDownDataSection[];
 }
@@ -43,7 +37,7 @@ export interface DropDownDataSection {
     dataTotalDocsSrc?: string[];
     dataParentUniqueIdsSrc?: string[];
     children?: DropDownDataOption[];
-    [key: string]: any; // add section data received from API object assign
+    [key: string]: any;
 }
 
 export interface DropDownDataOption {

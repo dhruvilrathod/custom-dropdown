@@ -10,7 +10,7 @@
         [maxSelectCount]="3"
         [isSingularInput]="false"
         [readOnlyChips]="false"
-        [isCustomInputAllowed]="false"
+        [isCustomInputAllowed]="true"
         [isSearchAllowed]="true"
         [isAsynchronousSearch]="true"
         [isClientSideSearchAllowed]="true"
@@ -33,6 +33,7 @@
         (onQuerySeach)="searchValue($event)"
         (onReset)="onReset($event)"
         (onSelectAll)="onSelectAll($event)"
+        (onChipContextMenu)="onChipContextMenu($event)"
         
         #myDropdown
         >

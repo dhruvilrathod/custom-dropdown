@@ -1,6 +1,5 @@
 import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { ChipChangeTrigger, SelectionChip } from '../interfaces/multi-object-selection.interface';
-import { UtilsService } from 'src/app/services/utils/utils.service';
 
 @Component({
   selector: 'app-multi-object-chips',
@@ -24,7 +23,6 @@ export class MultiObjectSelectionChipComponent implements OnInit, AfterViewInit,
   private _isAnyChipActive: boolean = false;
 
   constructor(
-    private _utils: UtilsService
   ) { }
 
   ngOnInit(): void {

@@ -1,10 +1,10 @@
 import { Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { ChipChangeTrigger, DataRequester, DropDownDataOption, DropDownDataSection, MultiObjectSelection, SelectionChip } from '../multi-object-select/interfaces/multi-object-selection.interface';
 import { DataChildrenSrcFields, DataExpandableSrcFields, DataFavouriteSrcFields, DataPathIdsSrcFields, DataTooltipSrcFields, DataTotalDocsSrcFields, DataUniqueSrcFields, DataVisibleNameSrcFields, MultiObjectSelectionTypeId } from '../multi-object-select/enums/multi-object-selection.enum';
-import { UtilsService } from '../services/utils/utils.service';
 import { MultiObjectSelectionChipComponent } from './multi-object-chips/multi-object-chips.component';
 import { AbstractControl, FormControl } from '@angular/forms';
 import { NgbPopover } from '@ng-bootstrap/ng-bootstrap';
+import { cloneDeep } from 'lodash';
 
 @Component({
   selector: 'app-multi-object-select',
@@ -90,13 +90,10 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges {
 
   private _flattenDropdownOptions: DropDownDataOption[] = [];
 
-  private _isDropdownOpened: boolean = false;
-
   private static _this: MultiObjectSelectionComponent;
 
 
   constructor(
-    private _utils: UtilsService
   ) {
     MultiObjectSelectionComponent._this = this;
   }
@@ -133,7 +130,7 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges {
     }
   }
 
-  public focusSearch() {
+  public focusSearch(e: Event | boolean) {
     this.computedWidth = `${parseInt(window.getComputedStyle(this.topContainer.nativeElement).width) + 8}px`;
     setTimeout(() => {
       if (this.isSearchAllowed) {
@@ -141,14 +138,11 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges {
       }
       else {
         this.topContainer.nativeElement.focus();
-      }  
-    });
-
-    setTimeout(() => {
-      if (!this.isDisabled && !this.popoverInstance.isOpen()) {
-        this.popoverInstance.open();
       }
-    }, 20);
+    });
+    if (this.popoverInstance.isOpen()) {
+      (<Event>e).preventDefault();
+    }
     this.chipsContainer && this.chipsContainer.resetActiveChip();
   }
 
@@ -278,7 +272,7 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges {
       for (let i = 0, dataLen = data.length; i < dataLen; i++) {
         for (let j = 0, dataLen = data[i].children.length; j < dataLen; j++) {
           if (data[i].children[j].isSelected) {
-            this.preSelectedObjectIds.push(this._utils.propertyAccess(data[i].children[j], data[i].dataUniqueFieldSrc!));
+            this.preSelectedObjectIds.push(MultiObjectSelectionComponent.dropdownPropertyAccess(data[i].children[j], data[i].dataUniqueFieldSrc!));
           }
         }
       }
@@ -313,12 +307,12 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges {
 
     for (let j = 0, dataLen = optionsData.length; j < dataLen; j++) {
 
-      !optionsData[j].hasOwnProperty('dataUniqueFieldValue') && (optionsData[j].dataUniqueFieldValue = this._utils.propertyAccess(optionsData[j], sectionData.dataUniqueFieldSrc!));
-      !optionsData[j].hasOwnProperty('dataVisibleNameValue') && (optionsData[j].dataVisibleNameValue = this._utils.propertyAccess(optionsData[j], sectionData.dataVisibleNameSrc!));
-      !optionsData[j].hasOwnProperty('dataTooltipValue') && (optionsData[j].dataTooltipValue = this._utils.propertyAccess(optionsData[j], sectionData.dataTooltipSrc!));
-      !optionsData[j].hasOwnProperty('dataExpandableValue') && (optionsData[j].dataExpandableValue = this._utils.propertyAccess(optionsData[j], sectionData.dataExpandableSrc!));
-      !optionsData[j].hasOwnProperty('dataFavouriteValue') && (optionsData[j].dataFavouriteValue = this._utils.propertyAccess(optionsData[j], sectionData.dataFavouriteSrc!));
-      !optionsData[j].hasOwnProperty('parentUniqueIdsValue') && (optionsData[j].parentUniqueIdsValue = this._utils.propertyAccess(optionsData[j], sectionData.dataParentUniqueIdsSrc!));
+      !optionsData[j].hasOwnProperty('dataUniqueFieldValue') && (optionsData[j].dataUniqueFieldValue = MultiObjectSelectionComponent.dropdownPropertyAccess(optionsData[j], sectionData.dataUniqueFieldSrc!));
+      !optionsData[j].hasOwnProperty('dataVisibleNameValue') && (optionsData[j].dataVisibleNameValue = MultiObjectSelectionComponent.dropdownPropertyAccess(optionsData[j], sectionData.dataVisibleNameSrc!));
+      !optionsData[j].hasOwnProperty('dataTooltipValue') && (optionsData[j].dataTooltipValue = MultiObjectSelectionComponent.dropdownPropertyAccess(optionsData[j], sectionData.dataTooltipSrc!));
+      !optionsData[j].hasOwnProperty('dataExpandableValue') && (optionsData[j].dataExpandableValue = MultiObjectSelectionComponent.dropdownPropertyAccess(optionsData[j], sectionData.dataExpandableSrc!));
+      !optionsData[j].hasOwnProperty('dataFavouriteValue') && (optionsData[j].dataFavouriteValue = MultiObjectSelectionComponent.dropdownPropertyAccess(optionsData[j], sectionData.dataFavouriteSrc!));
+      !optionsData[j].hasOwnProperty('parentUniqueIdsValue') && (optionsData[j].parentUniqueIdsValue = MultiObjectSelectionComponent.dropdownPropertyAccess(optionsData[j], sectionData.dataParentUniqueIdsSrc!));
 
       !optionsData[j].hasOwnProperty('levelIndex') && (optionsData[j].levelIndex = currentLevel ? (currentLevel + 1) : 1);
       !optionsData[j].hasOwnProperty('isSelected') && (optionsData[j].isSelected = false);
@@ -329,7 +323,7 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges {
       !optionsData[j].hasOwnProperty('isChildernLoading') && (optionsData[j].isChildernLoading = false);
       !optionsData[j].hasOwnProperty('isVisible') && (optionsData[j].isVisible = true);
 
-      !optionsData[j].hasOwnProperty('children') && !this.isAsynchronouslyExpandable && (optionsData[j].children = this._utils.propertyAccess(optionsData[j], sectionData.dataChildrenSrc!));
+      !optionsData[j].hasOwnProperty('children') && !this.isAsynchronouslyExpandable && (optionsData[j].children = MultiObjectSelectionComponent.dropdownPropertyAccess(optionsData[j], sectionData.dataChildrenSrc!));
     }
 
     if (!isQuery) {
@@ -904,12 +898,12 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges {
       isCustom: isCustomChip,
       isHidden: !optionData.isVisible ? true : false,
       isSingular: this.isSingularInput ? true : optionData.isSingular ? true : false,
-      dataUniqueFieldValue: this._utils.propertyAccess(optionData, ["dataUniqueFieldValue"]),
-      dataVisibleNameValue: this._utils.propertyAccess(optionData, ["dataVisibleNameValue"]),
-      dataTooltipValue: this._utils.propertyAccess(optionData, ["dataTooltipValue"]),
-      dataExpandableValue: this._utils.propertyAccess(optionData, ["dataExpandableValue"]),
-      dataFavouriteValue: this._utils.propertyAccess(optionData, ["dataFavouriteValue"]),
-      parentUniqueIdsValue: this._utils.propertyAccess(optionData, ["parentUniqueIdsValue"]),
+      dataUniqueFieldValue: MultiObjectSelectionComponent.dropdownPropertyAccess(optionData, ["dataUniqueFieldValue"]),
+      dataVisibleNameValue: MultiObjectSelectionComponent.dropdownPropertyAccess(optionData, ["dataVisibleNameValue"]),
+      dataTooltipValue: MultiObjectSelectionComponent.dropdownPropertyAccess(optionData, ["dataTooltipValue"]),
+      dataExpandableValue: MultiObjectSelectionComponent.dropdownPropertyAccess(optionData, ["dataExpandableValue"]),
+      dataFavouriteValue: MultiObjectSelectionComponent.dropdownPropertyAccess(optionData, ["dataFavouriteValue"]),
+      parentUniqueIdsValue: MultiObjectSelectionComponent.dropdownPropertyAccess(optionData, ["parentUniqueIdsValue"]),
       originalData: optionData
     };
     return chip;
@@ -932,10 +926,10 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges {
       this.chipData[i].isCustom && optionIds.push(this.chipData[i]);
     }
     this._validateChipDataLength(optionIds) && this.selectionChange.emit(optionIds);
-    if(this.isSingularInput && optionIds.length === 1) {
+    if (this.isSingularInput && optionIds.length === 1) {
       this.popoverInstance.close();
-    } 
-    if(this.maxSelectCount > 0 && optionIds.length === this.maxSelectCount) {
+    }
+    if (this.maxSelectCount > 0 && optionIds.length === this.maxSelectCount) {
       this.popoverInstance.close();
     }
   }
@@ -962,11 +956,11 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges {
 
     for (let i = 0, dataLen = data.length; i < dataLen; i++) {
       let chip: SelectionChip = {
-        dataFavouriteValue: MultiObjectSelectionComponent._this._utils.propertyAccess(data[i], sectionConfig.dataFavouriteSrc!),
-        dataUniqueFieldValue: MultiObjectSelectionComponent._this._utils.propertyAccess(data[i], sectionConfig.dataUniqueSrc!),
-        dataTooltipValue: MultiObjectSelectionComponent._this._utils.propertyAccess(data[i], sectionConfig.dataTooltipSrc!),
-        dataVisibleNameValue: MultiObjectSelectionComponent._this._utils.propertyAccess(data[i], sectionConfig.dataVisibleNameSrc!),
-        parentUniqueIdsValue: MultiObjectSelectionComponent._this._utils.propertyAccess(data[i], sectionConfig.dataParentUniqueIdsSrc!),
+        dataFavouriteValue: MultiObjectSelectionComponent.dropdownPropertyAccess(data[i], sectionConfig.dataFavouriteSrc!),
+        dataUniqueFieldValue: MultiObjectSelectionComponent.dropdownPropertyAccess(data[i], sectionConfig.dataUniqueSrc!),
+        dataTooltipValue: MultiObjectSelectionComponent.dropdownPropertyAccess(data[i], sectionConfig.dataTooltipSrc!),
+        dataVisibleNameValue: MultiObjectSelectionComponent.dropdownPropertyAccess(data[i], sectionConfig.dataVisibleNameSrc!),
+        parentUniqueIdsValue: MultiObjectSelectionComponent.dropdownPropertyAccess(data[i], sectionConfig.dataParentUniqueIdsSrc!),
         canDelete: MultiObjectSelectionComponent._this.readOnlyChips ? false : true,
         originalData: data[i]
       }
@@ -974,5 +968,28 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges {
     }
 
     return preFilledChips;
+  }
+
+  public static dropdownPropertyAccess(dataObj: any, path: string[]): any {
+
+    if (!path || !path.length || path.length < 1) {
+      return '';
+    }
+
+    let value;
+
+    if (path.length === 1) {
+      value = dataObj[path[0]];
+    }
+    else {
+
+      value = cloneDeep(dataObj);
+
+      for (let k = 0, pathLen = path.length; k < pathLen; k++) {
+        value = value[path[k]];
+      }
+    }
+
+    return value;
   }
 }

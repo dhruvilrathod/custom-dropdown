@@ -21,7 +21,7 @@
             <app-multi-object-chips 
                 [chipData]="chipData"
                 (onChipRemove)="chipRemovalTrigger($event)"
-                (focusSearch)="focusSearch()"
+                (focusSearch)="focusSearch($event)"
                 (onChipClick)="onChipClick.emit($event)"
                 (onChipContextMenu)="onChipContextMenu.emit($event)"
                 #chipsContainer>
@@ -39,7 +39,7 @@
             (input)="queryTrigger($any($event.target).value)"
             (change)="addCustomChip($any($event.target).value)"
             (beforeinput)="activateLastChip($event)"
-            (click)="focusSearch()"
+            (click)="focusSearch($event)"
             #queryBox>
     </div>
 
