@@ -29,6 +29,10 @@ export class AppComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    this.makeAPICall();
+  }
+
+  public makeAPICall() {
     this.loading = true;
 
     this._httpService.getData().subscribe({
@@ -59,7 +63,7 @@ export class AppComponent implements OnInit {
           dataVisibleNameSrc: ["name"],
           allowSectionSelection: false,
           sectionTooltipKey: "my section 333",
-          sectionNameKey: "sectionnn 222 name"
+          sectionNameKey: ""
         }, [
           {
             id: "-2",
@@ -79,40 +83,40 @@ export class AppComponent implements OnInit {
       },
       error: (err) => { console.log(err); },
       complete: () => {
-        // this.loading = false;
+        this.loading = false;
 
-        this._httpService.getPreselected().subscribe({
-          next: (data: any) => {
-            switch (1) {
-              case MultiObjectSelectionTypeId.FOLDER_SELECTION:
-                this.preSelectedChips = MultiObjectSelectionComponent.preparePrefilledChipsData({
-                  dataTooltipSrc: DataTooltipSrcFields.FOLDER_SELECTION.split("/"),
-                  dataUniqueFieldSrc: DataUniqueSrcFields.FOLDER_SELECTION.split("/"),
-                  dataVisibleNameSrc: DataVisibleNameSrcFields.FOLDER_SELECTION.split("/"),
-                  dataExpandableSrc: DataExpandableSrcFields.FOLDER_SELECTION.split("/"),
-                  dataChildrenSrc: DataChildrenSrcFields.FOLDER_SELECTION.split("/"),
-                  dataFavouriteSrc: DataFavouriteSrcFields.FOLDER_SELECTION.split("/"),
-                  dataTotalDocsSrc: DataTotalDocsSrcFields.FOLDER_SELECTION.split("/"),
-                  dataParentUniqueIdsSrc: DataPathIdsSrcFields.FOLDER_SELECTION.split("/"),
-                }, data);
-                console.log(this.preSelectedChips);
+        // this._httpService.getPreselected().subscribe({
+        //   next: (data: any) => {
+        //     switch (1) {
+        //       case MultiObjectSelectionTypeId.FOLDER_SELECTION:
+        //         this.preSelectedChips = MultiObjectSelectionComponent.preparePrefilledChipsData({
+        //           dataTooltipSrc: DataTooltipSrcFields.FOLDER_SELECTION.split("/"),
+        //           dataUniqueFieldSrc: DataUniqueSrcFields.FOLDER_SELECTION.split("/"),
+        //           dataVisibleNameSrc: DataVisibleNameSrcFields.FOLDER_SELECTION.split("/"),
+        //           dataExpandableSrc: DataExpandableSrcFields.FOLDER_SELECTION.split("/"),
+        //           dataChildrenSrc: DataChildrenSrcFields.FOLDER_SELECTION.split("/"),
+        //           dataFavouriteSrc: DataFavouriteSrcFields.FOLDER_SELECTION.split("/"),
+        //           dataTotalDocsSrc: DataTotalDocsSrcFields.FOLDER_SELECTION.split("/"),
+        //           dataParentUniqueIdsSrc: DataPathIdsSrcFields.FOLDER_SELECTION.split("/"),
+        //         }, data);
+        //         console.log(this.preSelectedChips);
                 
-                break;
+        //         break;
         
-              default:
-                this.preSelectedChips = [];
-                break;
+        //       default:
+        //         this.preSelectedChips = [];
+        //         break;
         
-            };
-          },
-          error: (err) => { console.log(err); },
-          complete: () => {
-            this.loading = false;
-          }
-        });
+        //     };
+        //   },
+        //   error: (err) => { console.log(err); },
+        //   complete: () => {
+        //     this.loading = false;
+        //   }
+        // });
 
       }
-    })
+    });
   }
 
   public errorOccured(message: string) {

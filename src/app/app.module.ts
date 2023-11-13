@@ -7,18 +7,22 @@ import { AppComponent } from './app.component';
 import { MultiObjectSelectionComponent } from './multi-object-select/multi-object-select.component';
 import { MultiObjectSelectionChipComponent } from './multi-object-select/multi-object-chips/multi-object-chips.component';
 import { MultiObjectDropdownComponent } from './multi-object-select/multi-object-dropdown/multi-object-dropdown.component';
+import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { SamplePopoverComponent } from './sample/sample-popover/sample-popover.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     MultiObjectSelectionComponent,
     MultiObjectSelectionChipComponent,
-    MultiObjectDropdownComponent
+    MultiObjectDropdownComponent,
+    SamplePopoverComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
-    HttpClientModule
+    HttpClientModule,
+    NgbModule
   ],
   providers: [],
   bootstrap: [AppComponent]
