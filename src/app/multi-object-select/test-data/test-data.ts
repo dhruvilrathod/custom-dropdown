@@ -93,3 +93,33 @@ export const chipData: DropDownDataOption[] = [
     },
 ];
 
+
+// Sample data for the interfaces
+export const dropDownOption1: DropDownDataOption = {
+    isSelected: false,
+    dataUniqueFieldValue: 1,
+    dataVisibleNameValue: 'Option 1',
+};
+
+export const dropDownOption2: DropDownDataOption = {
+    isSelected: false,
+    dataUniqueFieldValue: 2,
+    dataVisibleNameValue: 'Option 2',
+};
+
+export const dropDownSection: DropDownDataSection = {
+    isSelected: false,
+    sectionId: 1,
+    sectionNameKey: 'Section 1',
+    children: [dropDownOption1, dropDownOption2],
+};
+
+export const selectionChip: SelectionChip = {
+    dataUniqueFieldValue: 1,
+    dataVisibleNameValue: 'Selected Chip',
+};
+
+export const multiObjectSelection: MultiObjectSelection = {
+    isSingularInput: false,
+    dropDownSections: [dropDownSection],
+};

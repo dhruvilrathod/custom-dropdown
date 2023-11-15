@@ -9,6 +9,7 @@
     [ngbPopover]="popContent"
     [placement]="'auto'" 
     [autoClose]="'outside'" 
+    (hidden)="dropdownCloseTrigger()"
     [container]="'body'"    
     tabindex="0"
     #topContainer
@@ -37,7 +38,7 @@
             [placeholder]="placeholderKey"
             [readonly]="!isSearchAllowed ? 'readonly' : null"
             (input)="queryTrigger($any($event.target).value)"
-            (change)="addCustomChip($any($event.target).value)"
+            (keydown)="addCustomChip($event)"
             (beforeinput)="activateLastChip($event)"
             (click)="focusSearch($event)"
             #queryBox>

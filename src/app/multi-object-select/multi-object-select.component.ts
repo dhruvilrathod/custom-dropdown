@@ -89,7 +89,7 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges {
   public isQueryFocused: boolean = false;
 
   private _flattenDropdownOptions: DropDownDataOption[] = [];
-
+  private _isDropdownCloseAllowed: boolean = true;
   private static _this: MultiObjectSelectionComponent;
 
 
@@ -131,6 +131,13 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges {
   }
 
   public focusSearch(e: Event | boolean) {
+    if(this.popoverInstance.isOpen()) {
+      this._isDropdownCloseAllowed = false;
+    }
+    else {
+      this._isDropdownCloseAllowed = true;
+    }
+    
     this.computedWidth = `${parseInt(window.getComputedStyle(this.topContainer.nativeElement).width) + 8}px`;
     setTimeout(() => {
       if (this.isSearchAllowed) {
@@ -140,9 +147,6 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges {
         this.topContainer.nativeElement.focus();
       }
     });
-    if (this.popoverInstance.isOpen()) {
-      (<Event>e).preventDefault();
-    }
     this.chipsContainer && this.chipsContainer.resetActiveChip();
   }
 
@@ -210,8 +214,9 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges {
     }
   }
 
-  public addCustomChip(name: string): void {
+  public addCustomChip(event: KeyboardEvent): void {
 
+    let name = this.queryBox.nativeElement.value;
     if (this.isCustomInputAllowed === false || name === '' || name === undefined || name === null) {
       return;
     }
@@ -219,7 +224,7 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges {
       this.queryState = true;
     }
 
-    if (this.isCustomInputAllowed) {
+    if (this.isCustomInputAllowed && event.key === "Enter") {
       let newOptionData: DropDownDataOption = {
         dataVisibleNameValue: name,
         dataTooltipValue: name,
@@ -229,6 +234,8 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges {
       this.customChipData.push(chip);
       this.chipData.push(chip);
       this.queryBox.nativeElement.value = '';
+      this.onChipAdd.emit({ data: chip });
+      this._sendLatestDropdownSelection();
       this.queryState = false;
     }
     else {
@@ -391,8 +398,6 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges {
 
   public optionSelectionTrigger(selected: boolean, optionsData: DropDownDataOption, sectionData: DropDownDataSection) {
     if (selected && (this.chipData.length === this.maxSelectCount)) {
-
-
       this.chipRemovalTrigger({ data: this.chipData.pop()!, section: sectionData });
     }
     if (this.multiObjectData) {
@@ -573,6 +578,13 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges {
       }
     }
     this._sendLatestDropdownSelection();
+  }
+
+  public dropdownCloseTrigger(): void {
+    if(!this._isDropdownCloseAllowed) {
+      this.popoverInstance.open();
+      this._isDropdownCloseAllowed = true;
+    }
   }
 
   private _init() {
