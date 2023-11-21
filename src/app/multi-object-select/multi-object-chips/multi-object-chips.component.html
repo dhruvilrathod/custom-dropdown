@@ -1,23 +1,24 @@
 <ul (click)="sectionClicked($event)" #chipsContainer>
 
-    <ng-container *ngFor="let chip of chipData; let i = index">
+    <ng-container *ngFor="let c of chipData; let i = index">
 
         <li 
+            *ngIf="c.dataVisibleNameValue && c.dataVisibleNameValue !== ''"
             class="chip-container"
-            [ngClass]="{ 'active-chip': chip.isActive}"
-            (click)="activateChip(chip)"
-            (contextmenu)="openContextMenu($event, chip)"
+            [ngClass]="{ 'active-chip': c.isActive}"
+            (click)="activateChip(c)"
+            (contextmenu)="openContextMenu($event, c)"
             #chip>
         
-            <div *ngIf="chip.isFavourite" class="left-section" [title]="'favorite'">
+            <div *ngIf="c.isFavourite" class="left-section" [title]="'favorite'">
                 <i class="fa fa-star"></i>
             </div>
         
             <div class="main-section">
-                {{ chip.dataVisibleNameValue }}
+                {{ c.dataVisibleNameValue }}
             </div>
         
-            <div class="right-section" (click)="removeChip(chip)" *ngIf="chip.canDelete">
+            <div class="right-section" (click)="removeChip(c)" *ngIf="c.canDelete">
                 <i class="fa fa-close"></i>
             </div>
         

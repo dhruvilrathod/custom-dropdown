@@ -23,6 +23,7 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges {
   @ViewChild('popoverInstance') popoverInstance!: NgbPopover;
 
   @Input('data') data: any[] = [];
+  @Input('sectionConfigData') sectionConfigData!: DropDownDataSection;
   @Input('globalLoading') globalLoading: boolean = false;
   @Input('preSelectedObjectIds') preSelectedObjectIds: (string | number)[] = [];
   @Input('preSelectedChips') preSelectedChips: any[] = [];
@@ -246,17 +247,11 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges {
 
   public prepareDropDownData(data: (DropDownDataOption | DropDownDataSection)[], isQuery: boolean = false): MultiObjectSelection {
     if (isQuery) {
-      data = [MultiObjectSelectionComponent.createSection({
-        dataTooltipSrc: DataTooltipSrcFields.FOLDER_SELECTION.split("/"),
-        dataUniqueFieldSrc: DataUniqueSrcFields.FOLDER_SELECTION.split("/"),
-        dataVisibleNameSrc: DataVisibleNameSrcFields.FOLDER_SELECTION.split("/"),
-        dataExpandableSrc: DataExpandableSrcFields.FOLDER_SELECTION.split("/"),
-        dataChildrenSrc: DataChildrenSrcFields.FOLDER_SELECTION.split("/"),
-        dataFavouriteSrc: DataFavouriteSrcFields.FOLDER_SELECTION.split("/"),
-        dataTotalDocsSrc: DataTotalDocsSrcFields.FOLDER_SELECTION.split("/"),
-        dataParentUniqueIdsSrc: DataPathIdsSrcFields.FOLDER_SELECTION.split("/"),
+      let querySectionConfig = cloneDeep(this.sectionConfigData);
+      Object.assign(querySectionConfig, {
         allowSectionSelection: false
-      }, data)];
+      });
+      data = [MultiObjectSelectionComponent.createSection(querySectionConfig, data)];
     }
     let multiObjectConfig: MultiObjectSelection = {
       dropDownSections: data

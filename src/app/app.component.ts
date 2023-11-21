@@ -22,7 +22,16 @@ export class AppComponent implements OnInit {
 
   public preSelectedChips: any[] = [];
 
-  public sectionDataToPass: any;
+  public sectionDataToPass: any = {
+    dataTooltipSrc: DataTooltipSrcFields.FOLDER_SELECTION.split("/"),
+    dataUniqueFieldSrc: DataUniqueSrcFields.FOLDER_SELECTION.split("/"),
+    dataVisibleNameSrc: DataVisibleNameSrcFields.FOLDER_SELECTION.split("/"),
+    dataExpandableSrc: DataExpandableSrcFields.FOLDER_SELECTION.split("/"),
+    dataChildrenSrc: DataChildrenSrcFields.FOLDER_SELECTION.split("/"),
+    dataFavouriteSrc: DataFavouriteSrcFields.FOLDER_SELECTION.split("/"),
+    dataTotalDocsSrc: DataTotalDocsSrcFields.FOLDER_SELECTION.split("/"),
+    dataParentUniqueIdsSrc: DataPathIdsSrcFields.FOLDER_SELECTION.split("/"),
+  };
 
   constructor(
     private _httpService: HttpService
@@ -43,21 +52,13 @@ export class AppComponent implements OnInit {
         //   sectionTooltipKey: 'tooool',
         //   sectionNameKey: 'section 1211',
         // }
-
-        let section1 = MultiObjectSelectionComponent.createSection({
-          dataTooltipSrc: DataTooltipSrcFields.FOLDER_SELECTION.split("/"),
-          dataUniqueFieldSrc: DataUniqueSrcFields.FOLDER_SELECTION.split("/"),
-          dataVisibleNameSrc: DataVisibleNameSrcFields.FOLDER_SELECTION.split("/"),
-          dataExpandableSrc: DataExpandableSrcFields.FOLDER_SELECTION.split("/"),
-          dataChildrenSrc: DataChildrenSrcFields.FOLDER_SELECTION.split("/"),
-          dataFavouriteSrc: DataFavouriteSrcFields.FOLDER_SELECTION.split("/"),
-          dataTotalDocsSrc: DataTotalDocsSrcFields.FOLDER_SELECTION.split("/"),
-          dataParentUniqueIdsSrc: DataPathIdsSrcFields.FOLDER_SELECTION.split("/"),
+        Object.assign(this.sectionDataToPass, {
           allowSectionSelection: false,
           sectionTooltipKey: "my section eeee",
-          sectionNameKey: "sectionnn name"
-        }, value as any[]);
-        
+          sectionNameKey: "sectionnn name"      
+        })
+        let section1 = MultiObjectSelectionComponent.createSection(this.sectionDataToPass, value as any[]);
+
         let section2 = MultiObjectSelectionComponent.createSection({
           dataUniqueFieldSrc: ["id"],
           dataVisibleNameSrc: ["name"],
@@ -100,13 +101,13 @@ export class AppComponent implements OnInit {
         //           dataParentUniqueIdsSrc: DataPathIdsSrcFields.FOLDER_SELECTION.split("/"),
         //         }, data);
         //         console.log(this.preSelectedChips);
-                
+
         //         break;
-        
+
         //       default:
         //         this.preSelectedChips = [];
         //         break;
-        
+
         //     };
         //   },
         //   error: (err) => { console.log(err); },

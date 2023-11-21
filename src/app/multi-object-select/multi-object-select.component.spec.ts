@@ -6,7 +6,7 @@ import { DropDownDataOption, DropDownDataSection, MultiObjectSelection, Selectio
 import { customChipData, dropDownSection, multiObjectData, sampleData } from './test-data/test-data';
 import { MultiObjectSelectionChipComponent } from './multi-object-chips/multi-object-chips.component';
 
-fdescribe('MultiObjectSelectionComponent', () => {
+describe('MultiObjectSelectionComponent', () => {
   let component: MultiObjectSelectionComponent;
   let fixture: ComponentFixture<MultiObjectSelectionComponent>;
 
