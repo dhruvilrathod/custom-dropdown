@@ -60,3 +60,10 @@ export enum DataPathIdsSrcFields {
     PROJECT_SELECTION = "",
     DIST_SELECTION = ""
 }
+
+export enum DataDisabledSrcFields {
+    FOLDER_SELECTION = "disabled_folder",
+    FORM_SELECTION = "",
+    PROJECT_SELECTION = "",
+    DIST_SELECTION = ""
+}

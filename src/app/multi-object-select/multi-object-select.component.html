@@ -10,6 +10,7 @@
     [placement]="'auto'" 
     [autoClose]="'outside'" 
     (hidden)="dropdownCloseTrigger()"
+    (shown)="openDropdown()"
     [container]="'body'"    
     tabindex="0"
     #topContainer
@@ -130,28 +131,17 @@
     
                 <ng-container *ngIf="multiObjectDataForQuery">
     
+                    <ng-container *ngIf="searchLoading">
+
+                        <div class="dropdown-loading">
+                            {{ 'loading more results...' }}
+                        </div>
+
+                    </ng-container>
+
                     <li *ngFor="let s of multiObjectDataForQuery.dropDownSections; let sectionindex = index">
             
                         <ng-container *ngIf="s.isVisible === true">
-            
-                            <div *ngIf="s.sectionNameKey" class="section-details-container">
-                
-                                <input 
-                                *ngIf="s.allowSectionSelection === true"
-                                type="checkbox" 
-                                (change)="sectionSelectionTrigger($any($event.target).checked, s)"
-                                [id]="s.sectionId">
-                    
-                                <label 
-                                    class=""
-                                    [for]="s.sectionId" 
-                                    [title]="s.sectionTooltipKey || s.sectionNameKey"
-                                    [ngClass]="{ 'selectable': s.allowSectionSelection === true }">
-                    
-                                    {{ s.sectionNameKey }}
-                                </label>
-                
-                            </div>
             
                             <ul>
                                 <ng-container [ngTemplateOutlet]="dropdownTree" [ngTemplateOutletContext]="{ 
@@ -165,12 +155,6 @@
                         </ng-container>
             
                     </li>
-    
-                    <ng-container *ngIf="searchLoading">
-                        <div class="loading">
-                            {{ 'loading more results...' }}
-                        </div>
-                    </ng-container>
     
                 </ng-container>
     
@@ -186,7 +170,7 @@
         </ng-container>
     
         <ng-container *ngIf="isLoading || globalLoading">
-            <div class="loading">
+            <div class="dropdown-loading">
                 {{ 'loading' }}
             </div>
         </ng-container>
@@ -215,6 +199,7 @@
                 <div class="checkbox-container">
                     <input 
                         type="checkbox" 
+                        [disabled]="op.isDisabled"
                         [checked]="op.isSelected"
                         [indeterminate]="op.isPartiallySelected && !op.isSelected"
                         [id]="op.dataUniqueFieldValue"
@@ -240,7 +225,10 @@
     
                 </div>
     
-                <div class="title-container">
+                <div 
+                    class="title-container" 
+                    [ngClass]="{ 'disabled-label': op.isDisabled }"
+                >
                     <label [for]="op.dataUniqueFieldValue" [title]="op.dataTooltipValue">
                         {{ op.dataVisibleNameValue }}
                     </label>

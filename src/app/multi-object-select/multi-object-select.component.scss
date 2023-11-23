@@ -172,7 +172,7 @@
 
 
             .icon-container {
-                padding: 4px;
+                
                 border-radius: 4px;
                 display: flex;
                 justify-content: center;
@@ -204,18 +204,26 @@
                     cursor: pointer;
 
                 }
+                &.disabled-label>label {
+                    cursor: not-allowed;
+                    opacity: 0.5;
+                }
 
             }
 
             input[type=checkbox] {
                 cursor: pointer;
+
+                &:disabled {
+                    cursor: not-allowed;
+                }
             }
         }
     }
 }
 
 .no-data-text,
-.loading {
+.dropdown-loading {
     width: 100%;
     padding: 4px 0;
     text-align: center;

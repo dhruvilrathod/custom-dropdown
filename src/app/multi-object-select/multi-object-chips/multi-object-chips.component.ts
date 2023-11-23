@@ -118,7 +118,7 @@ export class MultiObjectSelectionChipComponent implements OnInit, AfterViewInit,
             this._currentChipActiveIndex--;
             this.chipData[this._currentChipActiveIndex].isActive = true;
           }
-          else if(this._currentChipActiveIndex + 1 <= this.chipData.length) {
+          else if(this.chipData[this._currentChipActiveIndex] && this._currentChipActiveIndex + 1 <= this.chipData.length) {
             console.log('esle',this.chipData[this._currentChipActiveIndex], this._currentChipActiveIndex);
             
             this.chipData[this._currentChipActiveIndex].isActive = true;

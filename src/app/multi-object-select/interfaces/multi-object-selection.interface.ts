@@ -36,6 +36,7 @@ export interface DropDownDataSection {
     dataFavouriteSrc?: string[];
     dataTotalDocsSrc?: string[];
     dataParentUniqueIdsSrc?: string[];
+    dataDisabledSrc?: string[];
     children?: DropDownDataOption[];
     [key: string]: any;
 }
@@ -70,6 +71,7 @@ export interface SelectionChip {
     isDisabled?: boolean;
     canDelete?: boolean;
     isHighlighted?: boolean;
+    isInvalid?: boolean;
     isFavourite?: boolean;
     isActive?: boolean;
     isCustom?: boolean;

@@ -5,7 +5,7 @@
         <li 
             *ngIf="c.dataVisibleNameValue && c.dataVisibleNameValue !== ''"
             class="chip-container"
-            [ngClass]="{ 'active-chip': c.isActive}"
+            [ngClass]="{ 'active-chip': c.isActive, 'chip-invalid': c.isInvalid}"
             (click)="activateChip(c)"
             (contextmenu)="openContextMenu($event, c)"
             #chip>
@@ -18,7 +18,7 @@
                 {{ c.dataVisibleNameValue }}
             </div>
         
-            <div class="right-section" (click)="removeChip(c)" *ngIf="c.canDelete">
+            <div class="right-section" (click)="removeChip(c); $event.stopPropagation()" *ngIf="c.canDelete">
                 <i class="fa fa-close"></i>
             </div>
         

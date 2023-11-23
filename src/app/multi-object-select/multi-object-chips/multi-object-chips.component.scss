@@ -20,6 +20,17 @@ ul {
         justify-content: space-between;
         transition: inherit;
 
+        &.chip-invalid {
+            outline: none;
+            border: 1px solid rgba(236, 82, 82, 0.8);
+    
+            &.active-chip {
+                outline: none;
+                border: 1px solid rgba(236, 82, 82, 0.8);
+                box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(236, 82, 82, 0.6);    
+            }
+        }
+
         &.active-chip {
             outline: none;
             border: 1px solid rgba(82, 168, 236, .8);
@@ -43,6 +54,10 @@ ul {
 
         .main-section {
             margin: 0 8px;
+            max-width: 200px;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
         }
 
         .right-section {

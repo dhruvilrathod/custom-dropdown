@@ -2,7 +2,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { HttpService } from './services/http/http.service';
 import { DataRequester, SelectionChip } from './multi-object-select/interfaces/multi-object-selection.interface';
 import { MultiObjectSelectionComponent } from './multi-object-select/multi-object-select.component';
-import { DataTooltipSrcFields, DataUniqueSrcFields, DataVisibleNameSrcFields, DataExpandableSrcFields, DataChildrenSrcFields, DataFavouriteSrcFields, DataTotalDocsSrcFields, DataPathIdsSrcFields, MultiObjectSelectionTypeId } from './multi-object-select/enums/multi-object-selection.enum';
+import { DataTooltipSrcFields, DataUniqueSrcFields, DataVisibleNameSrcFields, DataExpandableSrcFields, DataChildrenSrcFields, DataFavouriteSrcFields, DataTotalDocsSrcFields, DataPathIdsSrcFields, MultiObjectSelectionTypeId, DataDisabledSrcFields } from './multi-object-select/enums/multi-object-selection.enum';
 import { Subscription } from 'rxjs';
 
 @Component({
@@ -22,6 +22,8 @@ export class AppComponent implements OnInit {
 
   public preSelectedChips: any[] = [];
 
+  public isVisible: boolean = true;
+
   public sectionDataToPass: any = {
     dataTooltipSrc: DataTooltipSrcFields.FOLDER_SELECTION.split("/"),
     dataUniqueFieldSrc: DataUniqueSrcFields.FOLDER_SELECTION.split("/"),
@@ -31,6 +33,7 @@ export class AppComponent implements OnInit {
     dataFavouriteSrc: DataFavouriteSrcFields.FOLDER_SELECTION.split("/"),
     dataTotalDocsSrc: DataTotalDocsSrcFields.FOLDER_SELECTION.split("/"),
     dataParentUniqueIdsSrc: DataPathIdsSrcFields.FOLDER_SELECTION.split("/"),
+    dataDisabledSrc: DataDisabledSrcFields.FOLDER_SELECTION.split("/"),
   };
 
   constructor(
@@ -84,37 +87,37 @@ export class AppComponent implements OnInit {
       },
       error: (err) => { console.log(err); },
       complete: () => {
-        this.loading = false;
+        // this.loading = false;
 
-        // this._httpService.getPreselected().subscribe({
-        //   next: (data: any) => {
-        //     switch (1) {
-        //       case MultiObjectSelectionTypeId.FOLDER_SELECTION:
-        //         this.preSelectedChips = MultiObjectSelectionComponent.preparePrefilledChipsData({
-        //           dataTooltipSrc: DataTooltipSrcFields.FOLDER_SELECTION.split("/"),
-        //           dataUniqueFieldSrc: DataUniqueSrcFields.FOLDER_SELECTION.split("/"),
-        //           dataVisibleNameSrc: DataVisibleNameSrcFields.FOLDER_SELECTION.split("/"),
-        //           dataExpandableSrc: DataExpandableSrcFields.FOLDER_SELECTION.split("/"),
-        //           dataChildrenSrc: DataChildrenSrcFields.FOLDER_SELECTION.split("/"),
-        //           dataFavouriteSrc: DataFavouriteSrcFields.FOLDER_SELECTION.split("/"),
-        //           dataTotalDocsSrc: DataTotalDocsSrcFields.FOLDER_SELECTION.split("/"),
-        //           dataParentUniqueIdsSrc: DataPathIdsSrcFields.FOLDER_SELECTION.split("/"),
-        //         }, data);
-        //         console.log(this.preSelectedChips);
+        this._httpService.getPreselected().subscribe({
+          next: (data: any) => {
+            switch (1) {
+              case MultiObjectSelectionTypeId.FOLDER_SELECTION:
+                this.preSelectedChips = MultiObjectSelectionComponent.preparePrefilledChipsData({
+                  dataTooltipSrc: DataTooltipSrcFields.FOLDER_SELECTION.split("/"),
+                  dataUniqueFieldSrc: DataUniqueSrcFields.FOLDER_SELECTION.split("/"),
+                  dataVisibleNameSrc: DataVisibleNameSrcFields.FOLDER_SELECTION.split("/"),
+                  dataExpandableSrc: DataExpandableSrcFields.FOLDER_SELECTION.split("/"),
+                  dataChildrenSrc: DataChildrenSrcFields.FOLDER_SELECTION.split("/"),
+                  dataFavouriteSrc: DataFavouriteSrcFields.FOLDER_SELECTION.split("/"),
+                  dataTotalDocsSrc: DataTotalDocsSrcFields.FOLDER_SELECTION.split("/"),
+                  dataParentUniqueIdsSrc: DataPathIdsSrcFields.FOLDER_SELECTION.split("/"),
+                }, data);
+                console.log(this.preSelectedChips);
 
-        //         break;
+                break;
 
-        //       default:
-        //         this.preSelectedChips = [];
-        //         break;
+              default:
+                this.preSelectedChips = [];
+                break;
 
-        //     };
-        //   },
-        //   error: (err) => { console.log(err); },
-        //   complete: () => {
-        //     this.loading = false;
-        //   }
-        // });
+            };
+          },
+          error: (err) => { console.log(err); },
+          complete: () => {
+            this.loading = false;
+          }
+        });
 
       }
     });
@@ -126,6 +129,7 @@ export class AppComponent implements OnInit {
 
   public finalDataReceived(data: any[]) {
     console.log(data);
+    data[0].isInvalid = true;
   }
 
   public onChipAdd(e: any) {
