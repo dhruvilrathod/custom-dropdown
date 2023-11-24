@@ -451,7 +451,7 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges, OnDestr
           this.queryAddedChipDataIds.push(optionsData.dataUniqueFieldValue!);
 
 
-          this.prefilledChipData.push(optionsData);
+          // this.prefilledChipData.push(optionsData);
         }
         else {
 
