@@ -47,6 +47,7 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges, OnDestr
   @Input('isCustomAllSelectOption') isCustomAllSelectOption: boolean = false; // done
   @Input('customAllSelectOptionUniqueId') customAllSelectOptionUniqueId!: string | number; // done
   @Input('customAllSelectOptionNameKey') customAllSelectOptionNameKey: string = ''; // done
+  @Input('hierarchySelectionModificationAllowed') hierarchySelectionModificationAllowed: boolean = true;
 
   @Output('selectionChange') selectionChange: EventEmitter<SelectionChip[]> = new EventEmitter<SelectionChip[]>();
   @Output('initialLoad') initialLoad: EventEmitter<boolean> = new EventEmitter<boolean>();
@@ -137,16 +138,16 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges, OnDestr
   }
 
   public focusSearch(e: Event | boolean) {
-    if(this.popoverInstance.isOpen()) {
+    if (this.popoverInstance.isOpen()) {
       this._isDropdownCloseAllowed = false;
     }
     else {
       this._isDropdownCloseAllowed = true;
     }
-    
+
     this.computedWidth = `${parseInt(window.getComputedStyle(this.topContainer.nativeElement).width) + 8}px`;
     setTimeout(() => {
-      if(this.queryBox) {
+      if (this.queryBox) {
         if (this.isSearchAllowed) {
           this.queryBox.nativeElement.focus();
         }
@@ -167,7 +168,7 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges, OnDestr
 
   public queryTrigger(searchVal: string): void {
 
-    if(this.globalLoading) return;
+    if (this.globalLoading) return;
 
     !this.popoverInstance.isOpen() && this.popoverInstance.open();
     this.multiObjectDataForQuery = undefined;
@@ -213,14 +214,14 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges, OnDestr
           if (!data || !data.length || data.length === 0) {
             data = [];
           }
-          for(let i = 0, queryDataLen = this.multiObjectDataForQuery!.dropDownSections[0].children!.length; i < queryDataLen; i++)  {
+          for (let i = 0, queryDataLen = this.multiObjectDataForQuery!.dropDownSections[0].children!.length; i < queryDataLen; i++) {
             let availableRecordIndex = data.findIndex((val) => this.multiObjectDataForQuery!.dropDownSections[0].children![i].dataUniqueFieldValue === MultiObjectSelectionComponent.dropdownPropertyAccess(val, this.sectionConfigData.dataUniqueFieldSrc!));
 
-            if(availableRecordIndex > -1) {
+            if (availableRecordIndex > -1) {
               data.splice(availableRecordIndex, 1);
             }
           }
-          
+
           this.multiObjectDataForQuery?.dropDownSections[0].children!.push(...data);
           this.multiObjectDataForQuery = this.prepareDropDownData(this.multiObjectDataForQuery?.dropDownSections[0].children!, true);
           this.searchLoading = false;
@@ -416,8 +417,8 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges, OnDestr
     }
     if (this.multiObjectData) {
       if (selected) {
-        optionsData.isSelected = true;
-        if(this.queryRemovededChipDataIds.includes(optionsData.dataUniqueFieldValue!)) {
+        !optionsData.isDisabled && (optionsData.isSelected = true);
+        if (this.queryRemovededChipDataIds.includes(optionsData.dataUniqueFieldValue!)) {
           let queryIndex = this.queryRemovededChipDataIds.indexOf(optionsData.dataUniqueFieldValue!);
           queryIndex > -1 && this.queryRemovededChipDataIds.splice(queryIndex, 1);
         }
@@ -431,11 +432,10 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges, OnDestr
       }
 
       else {
-
-        optionsData.isSelected = false;
-        if(this.queryAddedChipDataIds.includes(optionsData.dataUniqueFieldValue!)) {
+        !optionsData.isDisabled && (optionsData.isSelected = false);
+        if (this.queryAddedChipDataIds.includes(optionsData.dataUniqueFieldValue!)) {
           let queryIndex = this.queryAddedChipDataIds.indexOf(optionsData.dataUniqueFieldValue!);
-          queryIndex > -1 &&  this.queryAddedChipDataIds.splice(queryIndex, 1);
+          queryIndex > -1 && this.queryAddedChipDataIds.splice(queryIndex, 1);
         }
       }
 
@@ -447,8 +447,8 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges, OnDestr
 
         if (this.chipData.findIndex(val => val.dataUniqueFieldValue === optionsData.dataUniqueFieldValue) === -1) {
 
-          this.chipData.push(this._createChipData(optionsData));
-          this.queryAddedChipDataIds.push(optionsData.dataUniqueFieldValue!);
+          !optionsData.isDisabled && this.chipData.push(this._createChipData(optionsData));
+          !optionsData.isDisabled && this.queryAddedChipDataIds.push(optionsData.dataUniqueFieldValue!);
 
 
           // this.prefilledChipData.push(optionsData);
@@ -457,7 +457,7 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges, OnDestr
 
           let deleteIndex = this.chipData.findIndex(val => val.dataUniqueFieldValue === optionsData.dataUniqueFieldValue);
           let deletedChipPrefilledIndex = this.prefilledChipData.indexOf(this.prefilledChipData.filter((val) => val.parentUniqueIdsValue?.includes(optionsData.dataUniqueFieldValue!))[0]);
-          
+
           deletedChipPrefilledIndex > -1 && this.prefilledChipData.splice(deletedChipPrefilledIndex, 1);
           deleteIndex > -1 && this.chipData.splice(deleteIndex, 1);
           this.queryRemovededChipDataIds.push(optionsData.dataUniqueFieldValue!);
@@ -525,7 +525,7 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges, OnDestr
   public chipRemovalTrigger(chipChange: ChipChangeTrigger) {
 
 
-    if(this.popoverInstance.isOpen()) {
+    if (this.popoverInstance.isOpen()) {
       this._isDropdownCloseAllowed = false;
     }
     else {
@@ -537,7 +537,7 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges, OnDestr
 
         if (this.customChipData[i].dataUniqueFieldValue === chipChange.data.dataUniqueFieldValue) {
           let deleteIndex = this.chipData.indexOf(this.customChipData[i]);
-          let removed1 = deleteIndex > -1 ? this.chipData.splice(deleteIndex, 1): [];
+          let removed1 = deleteIndex > -1 ? this.chipData.splice(deleteIndex, 1) : [];
           let removed2 = this.customChipData.splice(i, 1);
 
           this.onChipRemove.emit({ data: chipChange.data });
@@ -548,10 +548,10 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges, OnDestr
     else {
       if (this.isAsynchronousSearch) {
 
-        if(this.queryState) {
+        if (this.queryState) {
           for (let i = 0, queryDataLen = this.multiObjectDataForQuery!.dropDownSections[0].children!.length; i < queryDataLen; i++) {
             if (this.multiObjectDataForQuery?.dropDownSections[0].children![i].dataUniqueFieldValue === chipChange.data.dataUniqueFieldValue) {
-              this.multiObjectDataForQuery!.dropDownSections[0].children![i].isSelected = false;
+              !this.multiObjectDataForQuery!.dropDownSections[0].children![i].isDisabled && (this.multiObjectDataForQuery!.dropDownSections[0].children![i].isSelected = false);
               let deletedChipPrefilledIndex = this.prefilledChipData.indexOf(this.prefilledChipData.filter((val) => val.parentUniqueIdsValue?.includes(this.multiObjectDataForQuery!.dropDownSections[0].children![i].dataUniqueFieldValue!))[0]);
               deletedChipPrefilledIndex > -1 && this.prefilledChipData.splice(deletedChipPrefilledIndex, 1);
             }
@@ -562,7 +562,7 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges, OnDestr
           if (chipChange.data.parentUniqueIdsValue && chipChange.data.parentUniqueIdsValue.includes(this._flattenDropdownOptions[i].dataUniqueFieldValue)) {
 
 
-            this._flattenDropdownOptions[i].isSelected = false;
+            !this._flattenDropdownOptions[i].isDisabled && (this._flattenDropdownOptions[i].isSelected = false);
           }
         }
 
@@ -580,7 +580,7 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges, OnDestr
 
           let deleteIndex = this.chipData.indexOf(chipChange.data);
           let deletedChip = deleteIndex > -1 ? this.chipData.splice(deleteIndex, 1) : [];
-          let deletedChipPrefilledIndex = this.prefilledChipData.indexOf(chipChange.data); 
+          let deletedChipPrefilledIndex = this.prefilledChipData.indexOf(chipChange.data);
           deletedChipPrefilledIndex > -1 && this.prefilledChipData.splice(deletedChipPrefilledIndex, 1);
           for (let i = 0, sectionsDataLen = this.multiObjectData.dropDownSections.length; i < sectionsDataLen; i++) {
             for (let j = 0, optionsDataLen = this.multiObjectData.dropDownSections[i].children!.length; j < optionsDataLen; j++) {
@@ -602,7 +602,7 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges, OnDestr
       for (let i = 0, flattenObjectLen = this._flattenDropdownOptions.length; i < flattenObjectLen; i++) {
 
         if (this._flattenDropdownOptions[i].dataUniqueFieldValue === chipChange.data.dataUniqueFieldValue) {
-          this._flattenDropdownOptions[i].isSelected = false;
+          !this._flattenDropdownOptions[i].isDisabled && (this._flattenDropdownOptions[i].isSelected = false);
 
           for (let j = 0, chipDataLen = this.chipData.length; j < chipDataLen; j++) {
             if (this.chipData[j].dataUniqueFieldValue === chipChange.data.dataUniqueFieldValue) {
@@ -621,7 +621,7 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges, OnDestr
   }
 
   public dropdownCloseTrigger(): void {
-    if(!this._isDropdownCloseAllowed) {
+    if (!this._isDropdownCloseAllowed) {
       this.popoverInstance.open();
       this._isDropdownCloseAllowed = true;
     }
@@ -645,6 +645,9 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges, OnDestr
     if (this.isSingularInput) {
       this.isCustomInputAllowed = false;
     }
+    if (!this.isMultipleLevel) {
+      this.hierarchySelectionModificationAllowed = false;
+    }
   }
 
   private _checkPrefilledChips(optionsData: DropDownDataOption[], sectionData: DropDownDataSection) {
@@ -656,7 +659,7 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges, OnDestr
         if (founded && founded.length > 0) {
 
 
-          optionsData[j].isSelected = true;
+          !optionsData[j].isDisabled && (optionsData[j].isSelected = true);
           let deletedChipPrefilledIndex = this.preSelectedChips.indexOf(founded[0]);
           deletedChipPrefilledIndex > -1 && this.preSelectedChips.splice(deletedChipPrefilledIndex, 1);
           this._valueSelectTreeTraversal(true, sectionData.children!, optionsData[j]);
@@ -688,24 +691,28 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges, OnDestr
     }
   }
 
-  private _valueSelectTreeTraversal(triggerValue: boolean, parent: DropDownDataOption[], child?: DropDownDataOption): boolean {
+  private _valueSelectTreeTraversal(triggerValue: boolean, parent: DropDownDataOption[], child?: DropDownDataOption, allData: boolean = false): boolean {
+    if (child?.isDisabled) {
+      return false;
+    }
 
     child && (child.isSelected = triggerValue);
 
     if (parent.length > 0) {
       for (let i = 0, parentLen = parent.length; i < parentLen; i++) {
-        if (parent[i] === child) {
-          parent[i].isSelected = triggerValue;
+        if (parent[i] === child && !parent[i].isDisabled) {
+
+          !parent[i].isDisabled && (parent[i].isSelected = triggerValue);
           !triggerValue && (parent[i].isPartiallySelected = false);
 
-          if (child.children && child.children.length > 0) {
+          if ((allData || this.hierarchySelectionModificationAllowed) && child.children && child.children.length > 0) {
             for (let j = 0, childLen = child.children.length; j < childLen; j++) {
 
-              child.children[j].isSelected = triggerValue;
+              !child.children[j].isDisabled && (child.children[j].isSelected = triggerValue);
               !triggerValue && (child.children[j].isPartiallySelected = false);
 
               if (child.children[j].children && child.children[j].children!.length > 0) {
-                return this._valueSelectTreeTraversal(triggerValue, parent, child.children[j]);
+                return this._valueSelectTreeTraversal(triggerValue, parent, child.children[j], allData);
               }
             }
             parent[i].isPartiallySelected = !parent[i].isSelected && parent[i].children!.some((val) => (val.isSelected === true || val.isPartiallySelected === true));
@@ -716,9 +723,10 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges, OnDestr
         }
 
         else if (parent[i].children && parent[i].children!.length > 0) {
-          if (this._valueSelectTreeTraversal(triggerValue, parent[i].children!, child)) {
-            parent[i].isSelected = (!triggerValue) ? false : parent[i].children!.reduce<boolean>((acc, current) => { return (acc && current.isSelected!) }, true);
-            parent[i].isPartiallySelected = !parent[i].isSelected && parent[i].children!.some((val) => (val.isSelected === true || val.isPartiallySelected === true));
+          if (this._valueSelectTreeTraversal(triggerValue, parent[i].children!, child, allData)) {
+            (allData || this.hierarchySelectionModificationAllowed) && (parent[i].isSelected = (!triggerValue) ? false : parent[i].children!.reduce<boolean>((acc, current) => { return (acc && current.isSelected!) }, true));
+            console.log('should noittt be trueee ', parent[i].isSelected);
+            parent[i].isPartiallySelected = (allData || this.hierarchySelectionModificationAllowed) ? !parent[i].isSelected && parent[i].children!.some((val) => (val.isSelected === true || val.isPartiallySelected === true)) : false;
             !parent[i].isSelected && (this.isAllSelected = false);
 
             if (this.chipData.some((val: SelectionChip) => val.dataUniqueFieldValue === this.customAllSelectOptionUniqueId)) {
@@ -752,12 +760,12 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges, OnDestr
 
       for (let i = 0; i < data.length; i++) {
 
-        data[i].isSelected = true;
+        !data[i].isDisabled && (data[i].isSelected = true);
 
         let chipOptionData: SelectionChip = this._createChipData(<DropDownDataOption>data[i])
 
 
-        data[i].dataVisibleNameValue && (data[i].levelIndex === (0 || 1 || undefined)) && this.chipData.push(chipOptionData);
+        data[i].dataVisibleNameValue && (data[i].levelIndex === (0 || 1 || undefined)) && !data[i].isDisabled && this.chipData.push(chipOptionData);
 
         data[i].children && this._modifyChipSection(data[i].children!, true);
 
@@ -783,12 +791,12 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges, OnDestr
 
           let allChildrenSelected: boolean = !data[i].children!.some(val => val.isSelected === false);
 
-          if (allChildrenSelected && data[i].levelIndex && data[i].levelIndex > 0) {
+          if ((this.hierarchySelectionModificationAllowed || allData) && allChildrenSelected && data[i].levelIndex && data[i].levelIndex > 0) {
 
             if (this.chipData.findIndex(val => val.dataUniqueFieldValue === data[i].dataUniqueFieldValue) === -1) {
 
               let chipOptionData: SelectionChip = this._createChipData(<DropDownDataOption>data[i]);
-              this.chipData.push(chipOptionData);
+              !data[i].isDisabled && this.chipData.push(chipOptionData);
 
 
               this.onChipAdd.emit({ data: data[i] });
@@ -812,11 +820,17 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges, OnDestr
           else {
 
             for (let j = 0, chipDataLen = this.chipData.length; j < chipDataLen; j++) {
-              if (this.chipData[j].dataUniqueFieldValue === data[i].dataUniqueFieldValue) {
-                this.chipData.splice(j, 1);
-
-                this.onChipRemove.emit({ data: data[i] })
-                break;
+              if ((this.chipData[j].dataUniqueFieldValue === data[i].dataUniqueFieldValue)) {
+                if ((!this.hierarchySelectionModificationAllowed && !data[i].isSelected)) {
+                  this.chipData.splice(j, 1);
+                  this.onChipRemove.emit({ data: data[i] })
+                  break;
+                }
+                else if (this.hierarchySelectionModificationAllowed) {
+                  this.chipData.splice(j, 1);
+                  this.onChipRemove.emit({ data: data[i] })
+                  break;
+                }
               }
             }
 
@@ -825,10 +839,11 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges, OnDestr
               if (data[i].children && data[i].children![c] && data[i].children![c].isSelected && (this.chipData.findIndex(val => val.dataUniqueFieldValue === data[i].children![c].dataUniqueFieldValue) === -1)) {
                 let chipOptionData: SelectionChip = this._createChipData(<DropDownDataOption>data[i].children![c]);
 
-                this.chipData.push(chipOptionData);
+                !data[i].children![c].isDisabled && this.chipData.push(chipOptionData);
 
 
                 this.onChipAdd.emit({ data: data[i].children![c] });
+                if (!this.hierarchySelectionModificationAllowed) return;
               }
             }
           }
@@ -836,7 +851,7 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges, OnDestr
 
           allChildrenSelected = !data[i].children!.some(val => val.isSelected === false);
 
-          if (allChildrenSelected && data[i].levelIndex && data[i].levelIndex > 0 && allChildrenSelected) {
+          if ((this.hierarchySelectionModificationAllowed || allData) && allChildrenSelected && data[i].levelIndex && data[i].levelIndex > 0 && allChildrenSelected) {
 
             for (let c = 0, childrenLen = data[i].children!.length; c < childrenLen; c++) {
               for (let j = 0, chipDataLen = this.chipData.length; j < chipDataLen; j++) {
@@ -901,8 +916,8 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges, OnDestr
 
       for (let i = 0, sectionsDataLen = this.multiObjectData.dropDownSections.length; i < sectionsDataLen; i++) {
         for (let j = 0, optionsDataLen = this.multiObjectData.dropDownSections[i].children!.length; j < optionsDataLen; j++) {
-          this.multiObjectData.dropDownSections[i].children![j].isSelected = triggerValue;
-          this._valueSelectTreeTraversal(triggerValue, this.multiObjectData.dropDownSections[i].children!, this.multiObjectData.dropDownSections[i].children![j]);
+          !this.multiObjectData.dropDownSections[i].children![j].isDisabled && (this.multiObjectData.dropDownSections[i].children![j].isSelected = triggerValue);
+          this._valueSelectTreeTraversal(triggerValue, this.multiObjectData.dropDownSections[i].children!, this.multiObjectData.dropDownSections[i].children![j], true);
           !triggerValue && (this.multiObjectData.dropDownSections[i].children![j].isPartiallySelected = false);
         }
       }
@@ -912,8 +927,8 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges, OnDestr
     else {
 
       for (let j = 0, optionsDataLen = sectionData.children!.length; j < optionsDataLen; j++) {
-        sectionData.children![j].isSelected = true;
-        this._valueSelectTreeTraversal(triggerValue, sectionData.children!, sectionData.children![j]);
+        !sectionData.children![j].isDisabled && (sectionData.children![j].isSelected = true);
+        this._valueSelectTreeTraversal(triggerValue, sectionData.children!, sectionData.children![j], true);
         this._modifyChipSection(sectionData.children!, triggerValue);
       }
     }
@@ -1010,7 +1025,7 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges, OnDestr
 
   private _validateChipDataLength(data: any[]): boolean {
     if (data.length < this.minSelectCount || (this.maxSelectCount > 0 && data.length > this.maxSelectCount)) {
-      this.errorMessage.emit({ message: "Invalid length" });      
+      this.errorMessage.emit({ message: "Invalid length" });
       return false;
     }
     else {
