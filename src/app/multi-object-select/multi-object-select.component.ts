@@ -47,7 +47,7 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges, OnDestr
   @Input('isCustomAllSelectOption') isCustomAllSelectOption: boolean = false; // done
   @Input('customAllSelectOptionUniqueId') customAllSelectOptionUniqueId!: string | number; // done
   @Input('customAllSelectOptionNameKey') customAllSelectOptionNameKey: string = ''; // done
-  @Input('hierarchySelectionModificationAllowed') hierarchySelectionModificationAllowed: boolean = true;
+  @Input('isHierarchySelectionModificationAllowed') isHierarchySelectionModificationAllowed: boolean = true;
 
   @Output('selectionChange') selectionChange: EventEmitter<SelectionChip[]> = new EventEmitter<SelectionChip[]>();
   @Output('initialLoad') initialLoad: EventEmitter<boolean> = new EventEmitter<boolean>();
@@ -646,7 +646,7 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges, OnDestr
       this.isCustomInputAllowed = false;
     }
     if (!this.isMultipleLevel) {
-      this.hierarchySelectionModificationAllowed = false;
+      this.isHierarchySelectionModificationAllowed = false;
     }
   }
 
@@ -705,7 +705,7 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges, OnDestr
           !parent[i].isDisabled && (parent[i].isSelected = triggerValue);
           !triggerValue && (parent[i].isPartiallySelected = false);
 
-          if ((allData || this.hierarchySelectionModificationAllowed) && child.children && child.children.length > 0) {
+          if ((allData || this.isHierarchySelectionModificationAllowed) && child.children && child.children.length > 0) {
             for (let j = 0, childLen = child.children.length; j < childLen; j++) {
 
               !child.children[j].isDisabled && (child.children[j].isSelected = triggerValue);
@@ -724,10 +724,10 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges, OnDestr
 
         else if (parent[i].children && parent[i].children!.length > 0) {
           if (this._valueSelectTreeTraversal(triggerValue, parent[i].children!, child, allData)) {
-            (allData || this.hierarchySelectionModificationAllowed) && (parent[i].isSelected = (!triggerValue) ? false : parent[i].children!.reduce<boolean>((acc, current) => { return (acc && current.isSelected!) }, true));
+            (allData || this.isHierarchySelectionModificationAllowed) && (parent[i].isSelected = (!triggerValue) ? false : parent[i].children!.reduce<boolean>((acc, current) => { return (acc && current.isSelected!) }, true));
             console.log('should noittt be trueee ', parent[i].isSelected);
-            parent[i].isPartiallySelected = (allData || this.hierarchySelectionModificationAllowed) ? !parent[i].isSelected && parent[i].children!.some((val) => (val.isSelected === true || val.isPartiallySelected === true)) : false;
-            !parent[i].isSelected && (allData || this.hierarchySelectionModificationAllowed) && (this.isAllSelected = false);
+            parent[i].isPartiallySelected = (allData || this.isHierarchySelectionModificationAllowed) ? !parent[i].isSelected && parent[i].children!.some((val) => (val.isSelected === true || val.isPartiallySelected === true)) : false;
+            !parent[i].isSelected && (allData || this.isHierarchySelectionModificationAllowed) && (this.isAllSelected = false);
 
             if (this.chipData.some((val: SelectionChip) => val.dataUniqueFieldValue === this.customAllSelectOptionUniqueId)) {
               let deleteIndex = this.chipData.indexOf((val: SelectionChip) => val.dataUniqueFieldValue === this.customAllSelectOptionUniqueId);
@@ -765,10 +765,10 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges, OnDestr
         let chipOptionData: SelectionChip = this._createChipData(<DropDownDataOption>data[i])
 
 
-        if (this.hierarchySelectionModificationAllowed && data[i].dataVisibleNameValue && (data[i].levelIndex === (0 || 1 || undefined)) && !data[i].isDisabled) {
+        if (this.isHierarchySelectionModificationAllowed && data[i].dataVisibleNameValue && (data[i].levelIndex === (0 || 1 || undefined)) && !data[i].isDisabled) {
           this.chipData.push(chipOptionData);
         }
-        else if (!this.hierarchySelectionModificationAllowed && data[i].dataVisibleNameValue && !data[i].isDisabled) {
+        else if (!this.isHierarchySelectionModificationAllowed && data[i].dataVisibleNameValue && !data[i].isDisabled) {
           this.chipData.push(chipOptionData);
         }
 
@@ -796,7 +796,7 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges, OnDestr
 
           let allChildrenSelected: boolean = !data[i].children!.some(val => val.isSelected === false);
 
-          if ((this.hierarchySelectionModificationAllowed || allData) && allChildrenSelected && data[i].levelIndex && data[i].levelIndex > 0) {
+          if ((this.isHierarchySelectionModificationAllowed || allData) && allChildrenSelected && data[i].levelIndex && data[i].levelIndex > 0) {
 
             if (this.chipData.findIndex(val => val.dataUniqueFieldValue === data[i].dataUniqueFieldValue) === -1) {
 
@@ -826,12 +826,12 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges, OnDestr
 
             for (let j = 0, chipDataLen = this.chipData.length; j < chipDataLen; j++) {
               if ((this.chipData[j].dataUniqueFieldValue === data[i].dataUniqueFieldValue)) {
-                if ((!this.hierarchySelectionModificationAllowed && !data[i].isSelected)) {
+                if ((!this.isHierarchySelectionModificationAllowed && !data[i].isSelected)) {
                   this.chipData.splice(j, 1);
                   this.onChipRemove.emit({ data: data[i] })
                   break;
                 }
-                else if (this.hierarchySelectionModificationAllowed) {
+                else if (this.isHierarchySelectionModificationAllowed) {
                   this.chipData.splice(j, 1);
                   this.onChipRemove.emit({ data: data[i] })
                   break;
@@ -848,7 +848,7 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges, OnDestr
 
 
                 this.onChipAdd.emit({ data: data[i].children![c] });
-                if (!this.hierarchySelectionModificationAllowed) return;
+                if (!this.isHierarchySelectionModificationAllowed) return;
               }
             }
           }
@@ -856,7 +856,7 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges, OnDestr
 
           allChildrenSelected = !data[i].children!.some(val => val.isSelected === false);
 
-          if ((this.hierarchySelectionModificationAllowed || allData) && allChildrenSelected && data[i].levelIndex && data[i].levelIndex > 0 && allChildrenSelected) {
+          if ((this.isHierarchySelectionModificationAllowed || allData) && allChildrenSelected && data[i].levelIndex && data[i].levelIndex > 0 && allChildrenSelected) {
 
             for (let c = 0, childrenLen = data[i].children!.length; c < childrenLen; c++) {
               for (let j = 0, chipDataLen = this.chipData.length; j < chipDataLen; j++) {
