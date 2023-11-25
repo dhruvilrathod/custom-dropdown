@@ -15,6 +15,8 @@ export class AppComponent implements OnInit {
   @ViewChild('myDropdown', { static: true }) myDropdown!: MultiObjectSelectionComponent;
 
   title = 'custom-dropdown';
+  
+  public invalidMessage = '';
 
   public loading: boolean = false;
 
@@ -23,6 +25,8 @@ export class AppComponent implements OnInit {
   public preSelectedChips: any[] = [];
 
   public isVisible: boolean = true;
+
+  public isSelectionValid: boolean = true;
 
   public sectionDataToPass: any = {
     dataTooltipSrc: DataTooltipSrcFields.FOLDER_SELECTION.split("/"),
@@ -35,6 +39,8 @@ export class AppComponent implements OnInit {
     dataParentUniqueIdsSrc: DataPathIdsSrcFields.FOLDER_SELECTION.split("/"),
     dataDisabledSrc: DataDisabledSrcFields.FOLDER_SELECTION.split("/"),
   };
+  projectValidationXHR: boolean = false;
+  customInvalidMessageKey: string = '';
 
   constructor(
     private _httpService: HttpService
@@ -127,10 +133,36 @@ export class AppComponent implements OnInit {
     console.log(message);
   }
 
-  public finalDataReceived(data: any[]) {
+  public async finalDataReceived(data: any[]) {
     console.log(data);
-    data[0].isInvalid = true;
+
+    if(data.length > 0) {
+      this.projectValidationXHR = true;
+      await this.validateProject();
+      this.projectValidationXHR = false;
+      data[0].isInvalid = true;
+      this.customInvalidMessageKey = 'policy-already-applied'
+      this.isSelectionValid = false;  
+    }
+    else {
+      this.projectValidationXHR = false;
+      this.isSelectionValid = true;
+    }
+    // for(let d in data) {
+    //   if(data[d].dataUniqueFieldValue === "112278799$$QcxN3S")
+    //     data[d].isInvalid = true;
+    //     this.invalidMessage = "should not be herer"
+    // }
+    console.log('bbb');
   }
+
+  public async validateProject(): Promise<boolean> {
+    return new Promise<boolean>((resolve, reject) => {
+      setTimeout(() => {
+        resolve(true);
+      }, 2000);
+    })
+  } 
 
   public onChipAdd(e: any) {
     console.log('received event for onChipAdd:', e);

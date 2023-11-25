@@ -1,6 +1,5 @@
 import { Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { ChipChangeTrigger, DataRequester, DropDownDataOption, DropDownDataSection, MultiObjectSelection, SelectionChip } from '../multi-object-select/interfaces/multi-object-selection.interface';
-import { DataChildrenSrcFields, DataExpandableSrcFields, DataFavouriteSrcFields, DataPathIdsSrcFields, DataTooltipSrcFields, DataTotalDocsSrcFields, DataUniqueSrcFields, DataVisibleNameSrcFields, MultiObjectSelectionTypeId } from '../multi-object-select/enums/multi-object-selection.enum';
 import { MultiObjectSelectionChipComponent } from './multi-object-chips/multi-object-chips.component';
 import { AbstractControl, FormControl } from '@angular/forms';
 import { NgbPopover } from '@ng-bootstrap/ng-bootstrap';
@@ -15,7 +14,6 @@ import { cloneDeep } from 'lodash';
   }
 })
 export class MultiObjectSelectionComponent implements OnInit, OnChanges, OnDestroy {
-
 
   @ViewChild('queryBox') queryBox!: ElementRef<HTMLInputElement>;
   @ViewChild('topContainer') topContainer!: ElementRef<HTMLDivElement>;
@@ -48,6 +46,8 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges, OnDestr
   @Input('customAllSelectOptionUniqueId') customAllSelectOptionUniqueId!: string | number; // done
   @Input('customAllSelectOptionNameKey') customAllSelectOptionNameKey: string = ''; // done
   @Input('isHierarchySelectionModificationAllowed') isHierarchySelectionModificationAllowed: boolean = true;
+  @Input('invalidMessage') invalidMessage: string = '';
+  @Input('externalValidation') externalValidation: boolean = true;
 
   @Output('selectionChange') selectionChange: EventEmitter<SelectionChip[]> = new EventEmitter<SelectionChip[]>();
   @Output('initialLoad') initialLoad: EventEmitter<boolean> = new EventEmitter<boolean>();
@@ -1025,6 +1025,17 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges, OnDestr
     }
     if (this.maxSelectCount > 0 && optionIds.length === this.maxSelectCount) {
       this.popoverInstance.close();
+    }
+    if (this.chipData && this.chipData.length && this.chipData.length > 0) {
+      let invalidChipFound = this.chipData.reduce<boolean>((acc, current) => { return (acc || (current.isInvalid ? current.isInvalid : false)) }, false);
+      console.log('aaa', invalidChipFound);
+
+      if (invalidChipFound) {
+        this.invalidState = true;
+      }
+      else {
+        this.invalidState = false;
+      }
     }
   }
 

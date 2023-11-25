@@ -4,20 +4,22 @@
         'search-not-allowed': !isSearchAllowed, 
         'container-disabled': isDisabled, 
         'container-read-only': readOnlyChips, 
-        'section-invalid' : (dropdownFormControl && dropdownFormControl.touched && dropdownFormControl.dirty) && (chipData.length > maxSelectCount || chipData.length < minSelectCount)
+        'section-invalid' : (externalValidation === false || invalidState === true) || (dropdownFormControl && dropdownFormControl.touched && dropdownFormControl.dirty) && (chipData.length > maxSelectCount || chipData.length < minSelectCount)
     }"
-    [ngbPopover]="popContent"
-    [placement]="'auto'" 
-    [autoClose]="'outside'" 
-    (hidden)="dropdownCloseTrigger()"
-    (shown)="openDropdown()"
-    [container]="'body'"    
-    tabindex="0"
-    #topContainer
-    #popoverInstance="ngbPopover"
     >
 
-    <div class="wrapper">        
+    <div 
+        class="wrapper"
+        [ngbPopover]="popContent"
+        [placement]="'auto'" 
+        [autoClose]="'outside'" 
+        (hidden)="dropdownCloseTrigger()"
+        (shown)="openDropdown()"
+        [container]="'body'"    
+        tabindex="0"
+        #topContainer
+        #popoverInstance="ngbPopover"    
+        >
         <div *ngIf="chipData.length > 0" class="selection-container">
     
             <app-multi-object-chips 
@@ -45,6 +47,13 @@
             #queryBox>
     </div>
 
+</div>
+
+<div *ngIf="(externalValidation === false || invalidState === true) && isDisabled && (invalidMessage && invalidMessage !== null && invalidMessage !== '')">
+    <span class="error-msg">
+        <i class="fa fa-warning"></i>
+        {{ invalidMessage }}
+    </span>
 </div>
 
 <ng-template #popContent>
