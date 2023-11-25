@@ -109,6 +109,9 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges, OnDestr
 
 
     if (changes['data'] && changes['data'].currentValue) {
+      if(changes['data'].currentValue.length === 0) {
+        this.chipData = [];
+      }
       this.multiObjectData = this.prepareDropDownData(this.data);
       this.setPreSelectedValues(this.multiObjectData.dropDownSections);
       this._setFlattenOptionsForQuery(this.multiObjectData.dropDownSections);

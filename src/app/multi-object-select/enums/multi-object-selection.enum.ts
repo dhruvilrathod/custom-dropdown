@@ -7,21 +7,21 @@ export enum MultiObjectSelectionTypeId {
 
 export enum DataUniqueSrcFields {
     FOLDER_SELECTION = "folderId",
-    FORM_SELECTION = "",
+    FORM_SELECTION = "formTypeID",
     PROJECT_SELECTION = "",
     DIST_SELECTION = ""
 }
 
 export enum DataVisibleNameSrcFields {
     FOLDER_SELECTION = "folder_title",
-    FORM_SELECTION = "",
+    FORM_SELECTION = "formTypeName",
     PROJECT_SELECTION = "",
     DIST_SELECTION = ""
 }
 
 export enum DataTooltipSrcFields {
     FOLDER_SELECTION = "folderPath",
-    FORM_SELECTION = "",
+    FORM_SELECTION = "formTypeName",
     PROJECT_SELECTION = "",
     DIST_SELECTION = ""
 }
