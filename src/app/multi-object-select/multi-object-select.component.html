@@ -37,9 +37,9 @@
             *ngIf="(!isSearchAllowed && chipData.length === 0) || (isSearchAllowed && chipData.length === 0) || (isSearchAllowed && chipData.length > 0 && popoverInstance.isOpen())"
             class="title-query" 
             type="text"
-            [ngClass]="{ 'search-not-allowed': !isSearchAllowed }"
+            [ngClass]="{ 'search-not-allowed': !isSearchAllowed || globalLoading }"
             [placeholder]="placeholderKey"
-            [readonly]="!isSearchAllowed ? 'readonly' : null"
+            [readonly]="(!isSearchAllowed || globalLoading)? 'readonly' : null"
             (input)="queryTrigger($any($event.target).value)"
             (keydown)="addCustomChip($event)"
             (beforeinput)="activateLastChip($event)"
@@ -60,7 +60,7 @@
     <div class="list-container" [ngStyle]="{ 'width': computedWidth, 'max-width': computedWidth }">
         <ul *ngIf="!isLoading && !globalLoading && (multiObjectData && multiObjectData?.dropDownSections) || (multiObjectDataForQuery && multiObjectDataForQuery?.dropDownSections)">
     
-            <ng-container *ngIf="queryState === false">
+            <ng-container *ngIf="queryState === false && isHierarchySelectionModificationAllowed === true">
     
                 <div 
                     class="action-button-container"

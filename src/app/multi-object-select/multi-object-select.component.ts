@@ -109,7 +109,7 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges, OnDestr
 
 
     if (changes['data'] && changes['data'].currentValue) {
-      if(changes['data'].currentValue.length === 0) {
+      if (changes['data'].currentValue.length === 0) {
         this.chipData = [];
       }
       this.multiObjectData = this.prepareDropDownData(this.data);
@@ -378,7 +378,7 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges, OnDestr
     if (dataOption.isExpanded) {
       dataOption.isChildernLoading = true;
 
-      if (dataOption.children || !this.isAsynchronouslyExpandable) {
+      if ((dataOption.children && dataOption.children.length && dataOption.children.length > 0) || !this.isAsynchronouslyExpandable) {
         dataOption.isChildernLoading = false;
         return;
       }
@@ -392,6 +392,7 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges, OnDestr
       this.dataRequester.emit({
         preparedData: paramObj,
         onResult: (data: any) => {
+          data = this._pruneIdenticalChildIds(data);
           dataOption.children = this.prepareDropDownOptions(dataSection, data, dataOption.levelIndex);
 
           if (!dataOption.isSelected) {
@@ -1040,6 +1041,14 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges, OnDestr
         this.invalidState = false;
       }
     }
+  }
+
+  private _pruneIdenticalChildIds(data: any[]): any[] {
+    data = data.filter((val) =>
+      this._flattenDropdownOptions.findIndex((obj) => obj.dataUniqueFieldValue === MultiObjectSelectionComponent.dropdownPropertyAccess(val, this.sectionConfigData.dataUniqueFieldSrc!)) === -1
+    );
+    console.log(data);
+    return data;
   }
 
   private _validateChipDataLength(data: any[]): boolean {

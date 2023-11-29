@@ -136,24 +136,24 @@ export class AppComponent implements OnInit {
   public async finalDataReceived(data: any[]) {
     console.log(data);
 
-    if(data.length > 0) {
-      this.projectValidationXHR = true;
-      await this.validateProject();
-      this.projectValidationXHR = false;
-      data[0].isInvalid = true;
-      this.customInvalidMessageKey = 'policy-already-applied'
-      this.isSelectionValid = false;  
-    }
-    else {
-      this.projectValidationXHR = false;
-      this.isSelectionValid = true;
-    }
-    // for(let d in data) {
-    //   if(data[d].dataUniqueFieldValue === "112278799$$QcxN3S")
-    //     data[d].isInvalid = true;
-    //     this.invalidMessage = "should not be herer"
+    // if(data.length > 0) {
+    //   this.projectValidationXHR = true;
+    //   await this.validateProject();
+    //   this.projectValidationXHR = false;
+    //   data[0].isInvalid = true;
+    //   this.customInvalidMessageKey = 'policy-already-applied'
+    //   this.isSelectionValid = false;  
     // }
-    console.log('bbb');
+    // else {
+    //   this.projectValidationXHR = false;
+    //   this.isSelectionValid = true;
+    // }
+    // // for(let d in data) {
+    // //   if(data[d].dataUniqueFieldValue === "112278799$$QcxN3S")
+    // //     data[d].isInvalid = true;
+    // //     this.invalidMessage = "should not be herer"
+    // // }
+    // console.log('bbb');
   }
 
   public async validateProject(): Promise<boolean> {
