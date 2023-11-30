@@ -60,7 +60,7 @@
     <div class="list-container" [ngStyle]="{ 'width': computedWidth, 'max-width': computedWidth }">
         <ul *ngIf="!isLoading && !globalLoading && (multiObjectData && multiObjectData?.dropDownSections) || (multiObjectDataForQuery && multiObjectDataForQuery?.dropDownSections)">
     
-            <ng-container *ngIf="queryState === false && isHierarchySelectionModificationAllowed === true">
+            <ng-container *ngIf="queryState === false">
     
                 <div 
                     class="action-button-container"

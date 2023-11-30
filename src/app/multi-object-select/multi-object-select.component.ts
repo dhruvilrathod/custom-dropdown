@@ -1074,7 +1074,7 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges, OnDestr
     for (let i = 0, dataLen = data.length; i < dataLen; i++) {
       let chip: SelectionChip = {
         dataFavouriteValue: MultiObjectSelectionComponent.dropdownPropertyAccess(data[i], sectionConfig.dataFavouriteSrc!),
-        dataUniqueFieldValue: MultiObjectSelectionComponent.dropdownPropertyAccess(data[i], sectionConfig.dataUniqueSrc!),
+        dataUniqueFieldValue: MultiObjectSelectionComponent.dropdownPropertyAccess(data[i], sectionConfig.dataUniqueFieldSrc!),
         dataTooltipValue: MultiObjectSelectionComponent.dropdownPropertyAccess(data[i], sectionConfig.dataTooltipSrc!),
         dataVisibleNameValue: MultiObjectSelectionComponent.dropdownPropertyAccess(data[i], sectionConfig.dataVisibleNameSrc!),
         parentUniqueIdsValue: MultiObjectSelectionComponent.dropdownPropertyAccess(data[i], sectionConfig.dataParentUniqueIdsSrc!),

@@ -15,7 +15,7 @@ export class AppComponent implements OnInit {
   @ViewChild('myDropdown', { static: true }) myDropdown!: MultiObjectSelectionComponent;
 
   title = 'custom-dropdown';
-  
+
   public invalidMessage = '';
 
   public loading: boolean = false;
@@ -64,7 +64,7 @@ export class AppComponent implements OnInit {
         Object.assign(this.sectionDataToPass, {
           allowSectionSelection: false,
           sectionTooltipKey: "my section eeee",
-          sectionNameKey: "sectionnn name"      
+          sectionNameKey: "sectionnn name"
         })
         let section1 = MultiObjectSelectionComponent.createSection(this.sectionDataToPass, value as any[]);
 
@@ -89,11 +89,11 @@ export class AppComponent implements OnInit {
           }
         ]);
         console.log(section1);
-        this.dataToPass = [section2, section1];
+        this.dataToPass = [section1];
       },
       error: (err) => { console.log(err); },
       complete: () => {
-        this.loading = false;
+        // this.loading = false;
 
         // this._httpService.getPreselected().subscribe({
         //   next: (data: any) => {
@@ -162,7 +162,7 @@ export class AppComponent implements OnInit {
         resolve(true);
       }, 2000);
     })
-  } 
+  }
 
   public onChipAdd(e: any) {
     console.log('received event for onChipAdd:', e);
