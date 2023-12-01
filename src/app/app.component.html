@@ -3,7 +3,7 @@
 <br>
 <div *ngIf="isVisible">
     <app-multi-object-select 
-        [data]="dataToPass"
+        [primaryData]="dataToPass"
         [globalLoading]="loading"
         [sectionConfigData]="sectionDataToPass"
         [preSelectedChips]="preSelectedChips"
@@ -39,6 +39,7 @@
         (onQuerySeach)="searchValue($event)"
         (onReset)="onReset($event)"
         (onSelectAll)="onSelectAll($event)"
+        (initialLoad)="makeAPICall()"
         (onChipContextMenu)="onChipContextMenu($event)"
         
         #myDropdown

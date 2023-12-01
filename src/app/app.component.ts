@@ -47,7 +47,7 @@ export class AppComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.makeAPICall();
+    // this.makeAPICall();
   }
 
   public makeAPICall() {
@@ -93,7 +93,7 @@ export class AppComponent implements OnInit {
       },
       error: (err) => { console.log(err); },
       complete: () => {
-        // this.loading = false;
+        this.loading = false;
 
         // this._httpService.getPreselected().subscribe({
         //   next: (data: any) => {

@@ -13,18 +13,18 @@ import { cloneDeep } from 'lodash';
     '(window:resize)': 'onResize($event)'
   }
 })
-export class MultiObjectSelectionComponent implements OnInit, OnChanges, OnDestroy {
+export class MultiObjectSelectionComponent implements OnInit, OnDestroy {
 
   @ViewChild('queryBox') queryBox!: ElementRef<HTMLInputElement>;
   @ViewChild('topContainer') topContainer!: ElementRef<HTMLDivElement>;
   @ViewChild('chipsContainer') chipsContainer!: MultiObjectSelectionChipComponent;
   @ViewChild('popoverInstance') popoverInstance!: NgbPopover;
 
-  @Input('data') data: any[] = [];
+  @Input('primaryData') get primaryData(): any[] { return this._primaryDataHolder; };
   @Input('sectionConfigData') sectionConfigData!: DropDownDataSection;
   @Input('globalLoading') globalLoading: boolean = false;
   @Input('preSelectedObjectIds') preSelectedObjectIds: (string | number)[] = [];
-  @Input('preSelectedChips') preSelectedChips: any[] = [];
+  @Input('preSelectedChips') get preSelectedChips(): any[] { return this._preSelectedChipsHolder; };
   @Input('dropdownFormControl') dropdownFormControl: AbstractControl = new FormControl(); // done
   @Input('isRequired') isRequired: boolean = true; // done
   @Input('isDisabled') isDisabled: boolean = false; // done
@@ -91,6 +91,8 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges, OnDestr
 
   public isQueryFocused: boolean = false;
 
+  private _primaryDataHolder: any[] = [];
+  private _preSelectedChipsHolder: any[] = [];
   private _flattenDropdownOptions: DropDownDataOption[] = [];
   private _isDropdownCloseAllowed: boolean = true;
   private static _this: MultiObjectSelectionComponent;
@@ -105,25 +107,46 @@ export class MultiObjectSelectionComponent implements OnInit, OnChanges, OnDestr
     this._init();
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
-
-
-    if (changes['data'] && changes['data'].currentValue) {
-      if (changes['data'].currentValue.length === 0) {
+  set primaryData(value: any[]) {
+    if(value) {
+      this._primaryDataHolder = value;
+      if (this._primaryDataHolder.length === 0) {
         this.chipData = [];
       }
-      this.multiObjectData = this.prepareDropDownData(this.data);
+      this.multiObjectData = this.prepareDropDownData(this._primaryDataHolder);
       this.setPreSelectedValues(this.multiObjectData.dropDownSections);
       this._setFlattenOptionsForQuery(this.multiObjectData.dropDownSections);
-
+  
       this.isLoading = false;
     }
+  }
 
-    if (changes['preSelectedChips'] && changes['preSelectedChips'].currentValue) {
-
-      this.setPreSelectedValues(changes['preSelectedChips'].currentValue, true);
+  set preSelectedChips(value: any[]) {
+    if(value) {
+      this._preSelectedChipsHolder = value;
+      this.setPreSelectedValues(this._preSelectedChipsHolder, true);
     }
   }
+
+  // ngOnChanges(changes: SimpleChanges): void {
+
+
+  //   if (changes['data'] && changes['data'].currentValue) {
+  //     if (changes['data'].currentValue.length === 0) {
+  //       this.chipData = [];
+  //     }
+  //     this.multiObjectData = this.prepareDropDownData(this._primaryDataHolder);
+  //     this.setPreSelectedValues(this.multiObjectData.dropDownSections);
+  //     this._setFlattenOptionsForQuery(this.multiObjectData.dropDownSections);
+
+  //     this.isLoading = false;
+  //   }
+
+  //   if (changes['preSelectedChips'] && changes['preSelectedChips'].currentValue) {
+
+  //     this.setPreSelectedValues(changes['preSelectedChips'].currentValue, true);
+  //   }
+  // }
 
   ngOnDestroy(): void {
     this.popoverInstance && this.popoverInstance.close();
