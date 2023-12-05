@@ -108,45 +108,25 @@ export class MultiObjectSelectionComponent implements OnInit, OnDestroy {
   }
 
   set primaryData(value: any[]) {
-    if(value) {
+    if (value) {
       this._primaryDataHolder = value;
       if (this._primaryDataHolder.length === 0) {
         this.chipData = [];
       }
       this.multiObjectData = this.prepareDropDownData(this._primaryDataHolder);
-      this.setPreSelectedValues(this.multiObjectData.dropDownSections);
+      this.setPreSelectedValues(this.multiObjectData.dropDownSections, this.preSelectedChips.length > 0);
       this._setFlattenOptionsForQuery(this.multiObjectData.dropDownSections);
-  
+
       this.isLoading = false;
     }
   }
 
   set preSelectedChips(value: any[]) {
-    if(value) {
+    if (value) {
       this._preSelectedChipsHolder = value;
       this.setPreSelectedValues(this._preSelectedChipsHolder, true);
     }
   }
-
-  // ngOnChanges(changes: SimpleChanges): void {
-
-
-  //   if (changes['data'] && changes['data'].currentValue) {
-  //     if (changes['data'].currentValue.length === 0) {
-  //       this.chipData = [];
-  //     }
-  //     this.multiObjectData = this.prepareDropDownData(this._primaryDataHolder);
-  //     this.setPreSelectedValues(this.multiObjectData.dropDownSections);
-  //     this._setFlattenOptionsForQuery(this.multiObjectData.dropDownSections);
-
-  //     this.isLoading = false;
-  //   }
-
-  //   if (changes['preSelectedChips'] && changes['preSelectedChips'].currentValue) {
-
-  //     this.setPreSelectedValues(changes['preSelectedChips'].currentValue, true);
-  //   }
-  // }
 
   ngOnDestroy(): void {
     this.popoverInstance && this.popoverInstance.close();
@@ -327,10 +307,14 @@ export class MultiObjectSelectionComponent implements OnInit, OnDestroy {
     }
 
     else {
-      this.prefilledChipData = data;
+      let sectionFound = data.reduce<boolean>((acc, val) => acc && val.hasOwnProperty("sectionNameKey"), true);
+      
+      if(!sectionFound) {
+        this.prefilledChipData = data;
+        this.chipData.push(...this.prefilledChipData);
+      }
 
-      this.chipData.push(...this.prefilledChipData);
-      if (this.multiObjectData.dropDownSections) {
+      if (this.multiObjectData && this.multiObjectData.dropDownSections) {
         for (let i = 0, sectionsDataLen = this.multiObjectData.dropDownSections.length; i < sectionsDataLen; i++) {
           this._checkPrefilledChips(this.multiObjectData.dropDownSections[i].children!, this.multiObjectData.dropDownSections[i]);
         }
@@ -417,15 +401,6 @@ export class MultiObjectSelectionComponent implements OnInit, OnDestroy {
         onResult: (data: any) => {
           data = this._pruneIdenticalChildIds(data);
           dataOption.children = this.prepareDropDownOptions(dataSection, data, dataOption.levelIndex);
-
-          if (!dataOption.isSelected) {
-            for (let i = 0, dataLen = dataOption.children.length; i < dataLen; i++) {
-              dataOption.children[i].isSelected && this.optionSelectionTrigger(true, dataOption.children[i], dataSection);
-            }
-          }
-          else {
-            this.optionSelectionTrigger(true, dataOption, dataSection);
-          }
 
           this._flattenDropdownOptions = [];
           this._setFlattenOptionsForQuery(this.multiObjectData.dropDownSections);
@@ -572,7 +547,7 @@ export class MultiObjectSelectionComponent implements OnInit, OnDestroy {
         }
       }
     }
-    else {
+    else if (this.multiObjectData) {
       if (this.isAsynchronousSearch) {
 
         if (this.queryState) {
@@ -644,6 +619,20 @@ export class MultiObjectSelectionComponent implements OnInit, OnDestroy {
         }
       }
     }
+    else {
+      let prefilledChipDataDeleteIndex = this.prefilledChipData.indexOf(chipChange.data);
+      if (prefilledChipDataDeleteIndex > -1) {
+        this.prefilledChipData.splice(prefilledChipDataDeleteIndex, 1);
+      }
+      let preSelectedChipsDeleteIndex = this.preSelectedChips.indexOf(chipChange.data);
+      if (preSelectedChipsDeleteIndex > -1) {
+        this.preSelectedChips.splice(preSelectedChipsDeleteIndex, 1);
+      }
+      let chipDataDeleteIndex = this.chipData.indexOf(chipChange.data);
+      if (chipDataDeleteIndex > -1) {
+        this.chipData.splice(chipDataDeleteIndex, 1);
+      }
+    }
     this._sendLatestDropdownSelection();
   }
 
@@ -693,6 +682,14 @@ export class MultiObjectSelectionComponent implements OnInit, OnDestroy {
           this._modifyChipSection(this.multiObjectData.dropDownSections);
         }
         else {
+
+          let chipAddIndex = this.preSelectedChips.findIndex(val => val.dataUniqueFieldValue === optionsData[j].dataUniqueFieldValue);
+          if (chipAddIndex > -1) {
+            this.preSelectedChips.splice(chipAddIndex, 1);
+            optionsData[j].isSelected = true;
+            this._valueSelectTreeTraversal(true, sectionData.children!, optionsData[j]);
+            this._modifyChipSection(this.multiObjectData.dropDownSections);
+          }
 
           let partiallyFounded = this.prefilledChipData.filter((val: SelectionChip) => {
             return val.parentUniqueIdsValue?.includes(optionsData[j].dataUniqueFieldValue!);
@@ -752,7 +749,6 @@ export class MultiObjectSelectionComponent implements OnInit, OnDestroy {
         else if (parent[i].children && parent[i].children!.length > 0) {
           if (this._valueSelectTreeTraversal(triggerValue, parent[i].children!, child, allData)) {
             (allData || this.isHierarchySelectionModificationAllowed) && (parent[i].isSelected = (!triggerValue) ? false : parent[i].children!.reduce<boolean>((acc, current) => { return (acc && current.isSelected!) }, true));
-            console.log('should noittt be trueee ', parent[i].isSelected);
             parent[i].isPartiallySelected = (allData || this.isHierarchySelectionModificationAllowed) ? !parent[i].isSelected && parent[i].children!.some((val) => (val.isSelected === true || val.isPartiallySelected === true)) : false;
             !parent[i].isSelected && (allData || this.isHierarchySelectionModificationAllowed) && (this.isAllSelected = false);
 
@@ -926,21 +922,20 @@ export class MultiObjectSelectionComponent implements OnInit, OnDestroy {
     }
   }
 
-  private _appendCustomChips() {
+  private _appendCustomChips(addPreSelectedChips: boolean = false) {
     this.chipData.push(...this.customChipData);
+    addPreSelectedChips && this.chipData.push(...this.preSelectedChips);
   }
 
   private _allSelectTrigger(triggerValue: boolean, sectionData?: DropDownDataSection) {
 
     this.isAllSelected = triggerValue;
 
-    if (triggerValue) {
-      this.onSelectAll.emit();
-      this._appendCustomChips();
-    }
     if (!triggerValue) {
       this.customChipData = [];
       this.prefilledChipData = [];
+      this.preSelectedChips = [];
+      this.chipData = [];
     }
 
     if (!sectionData) {
@@ -976,6 +971,10 @@ export class MultiObjectSelectionComponent implements OnInit, OnDestroy {
     }
     else if (!triggerValue) {
       this.chipData = [];
+    }
+    if (triggerValue) {
+      this.onSelectAll.emit();
+      this._appendCustomChips(true);
     }
   }
 
@@ -1055,7 +1054,6 @@ export class MultiObjectSelectionComponent implements OnInit, OnDestroy {
     }
     if (this.chipData && this.chipData.length && this.chipData.length > 0) {
       let invalidChipFound = this.chipData.reduce<boolean>((acc, current) => { return (acc || (current.isInvalid ? current.isInvalid : false)) }, false);
-      console.log('aaa', invalidChipFound);
 
       if (invalidChipFound) {
         this.invalidState = true;
@@ -1070,7 +1068,6 @@ export class MultiObjectSelectionComponent implements OnInit, OnDestroy {
     data = data.filter((val) =>
       this._flattenDropdownOptions.findIndex((obj) => obj.dataUniqueFieldValue === MultiObjectSelectionComponent.dropdownPropertyAccess(val, this.sectionConfigData.dataUniqueFieldSrc!)) === -1
     );
-    console.log(data);
     return data;
   }
 

@@ -1,6 +1,12 @@
 <br>
 <button (click)="isVisible = !isVisible">close</button>
 <br>
+<div>
+    <ng-container *ngFor="let d of receivedData">
+        {{ d.dataVisibleNameValue }} <br>
+    </ng-container>
+</div>
+<br>
 <div *ngIf="isVisible">
     <app-multi-object-select 
         [primaryData]="dataToPass"
@@ -13,7 +19,7 @@
         [maxSelectCount]="23"
         [isSingularInput]="false"
         [readOnlyChips]="false"
-        [isCustomInputAllowed]="false"
+        [isCustomInputAllowed]="true"
         [isSearchAllowed]="true"
         [isAsynchronousSearch]="true"
         [isClientSideSearchAllowed]="true"
@@ -23,7 +29,7 @@
         [noDataMessageKey]="'no-data-available'"
         [isMultipleLevel]="true"
         [isAsynchronouslyExpandable]="true"
-        [isHierarchySelectionModificationAllowed]="true"
+        [isHierarchySelectionModificationAllowed]="false"
         [isCustomAllSelectOption]="false"
         [customAllSelectOptionUniqueId]="'-1'"
         [customAllSelectOptionNameKey]="'all-options'"

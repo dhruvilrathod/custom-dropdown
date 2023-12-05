@@ -42,15 +42,54 @@ export class AppComponent implements OnInit {
   projectValidationXHR: boolean = false;
   customInvalidMessageKey: string = '';
 
+  public receivedData:any[] = [];
+
   constructor(
     private _httpService: HttpService
   ) { }
 
   ngOnInit(): void {
     // this.makeAPICall();
+    // !!this.preSelectedChips && this.getPreselectedValues();
+  }
+
+  public getPreselectedValues() {
+    this.loading = true;
+    this._httpService.getPreselected().subscribe({
+      next: (data: any) => {
+        switch (1) {
+          case MultiObjectSelectionTypeId.FOLDER_SELECTION:
+            this.preSelectedChips = MultiObjectSelectionComponent.preparePrefilledChipsData({
+              dataTooltipSrc: DataTooltipSrcFields.FOLDER_SELECTION.split("/"),
+              dataUniqueFieldSrc: DataUniqueSrcFields.FOLDER_SELECTION.split("/"),
+              dataVisibleNameSrc: DataVisibleNameSrcFields.FOLDER_SELECTION.split("/"),
+              dataExpandableSrc: DataExpandableSrcFields.FOLDER_SELECTION.split("/"),
+              dataChildrenSrc: DataChildrenSrcFields.FOLDER_SELECTION.split("/"),
+              dataFavouriteSrc: DataFavouriteSrcFields.FOLDER_SELECTION.split("/"),
+              dataTotalDocsSrc: DataTotalDocsSrcFields.FOLDER_SELECTION.split("/"),
+              dataParentUniqueIdsSrc: DataPathIdsSrcFields.FOLDER_SELECTION.split("/"),
+            }, data);
+            console.log(this.preSelectedChips);
+
+            break;
+
+          default:
+            this.preSelectedChips = [];
+            break;
+
+        };
+      },
+      error: (err) => { console.log(err); },
+      complete: () => {
+        this.loading = false;
+      }
+    });
   }
 
   public makeAPICall() {
+    if(this.dataToPass && this.dataToPass.length > 0) {
+      return;
+    }
     this.loading = true;
 
     this._httpService.getData().subscribe({
@@ -94,37 +133,6 @@ export class AppComponent implements OnInit {
       error: (err) => { console.log(err); },
       complete: () => {
         this.loading = false;
-
-        // this._httpService.getPreselected().subscribe({
-        //   next: (data: any) => {
-        //     switch (1) {
-        //       case MultiObjectSelectionTypeId.FOLDER_SELECTION:
-        //         this.preSelectedChips = MultiObjectSelectionComponent.preparePrefilledChipsData({
-        //           dataTooltipSrc: DataTooltipSrcFields.FOLDER_SELECTION.split("/"),
-        //           dataUniqueFieldSrc: DataUniqueSrcFields.FOLDER_SELECTION.split("/"),
-        //           dataVisibleNameSrc: DataVisibleNameSrcFields.FOLDER_SELECTION.split("/"),
-        //           dataExpandableSrc: DataExpandableSrcFields.FOLDER_SELECTION.split("/"),
-        //           dataChildrenSrc: DataChildrenSrcFields.FOLDER_SELECTION.split("/"),
-        //           dataFavouriteSrc: DataFavouriteSrcFields.FOLDER_SELECTION.split("/"),
-        //           dataTotalDocsSrc: DataTotalDocsSrcFields.FOLDER_SELECTION.split("/"),
-        //           dataParentUniqueIdsSrc: DataPathIdsSrcFields.FOLDER_SELECTION.split("/"),
-        //         }, data);
-        //         console.log(this.preSelectedChips);
-
-        //         break;
-
-        //       default:
-        //         this.preSelectedChips = [];
-        //         break;
-
-        //     };
-        //   },
-        //   error: (err) => { console.log(err); },
-        //   complete: () => {
-        //     this.loading = false;
-        //   }
-        // });
-
       }
     });
   }
@@ -135,7 +143,7 @@ export class AppComponent implements OnInit {
 
   public async finalDataReceived(data: any[]) {
     console.log(data);
-
+    this.receivedData = data;
     // if(data.length > 0) {
     //   this.projectValidationXHR = true;
     //   await this.validateProject();
