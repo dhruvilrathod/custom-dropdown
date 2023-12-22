@@ -50,7 +50,7 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
     // this.makeAPICall();
-    // !!this.preSelectedChips && this.getPreselectedValues();
+    !!this.preSelectedChips && this.getPreselectedValues();
   }
 
   public getPreselectedValues() {
