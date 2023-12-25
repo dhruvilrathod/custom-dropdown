@@ -18,7 +18,7 @@ class MockNgbPopover {
   // ...
 }
 
-fdescribe('MultiObjectSelectionComponent', () => {
+describe('MultiObjectSelectionComponent', () => {
   let component: MultiObjectSelectionComponent;
   let fixture: ComponentFixture<MultiObjectSelectionComponent>;
 
@@ -554,7 +554,7 @@ fdescribe('MultiObjectSelectionComponent', () => {
     expect(component.queryState).toBe(true);
   });
 
-  it('should filter options based on search value if isClientSideSearchAllowed is true and matches found', () => {
+  it('queryTrigger::should filter options based on search value if isClientSideSearchAllowed is true and matches found', () => {
     // Arrange
     component.sectionConfigData = {
       dataTooltipSrc: DataTooltipSrcFields.FOLDER_SELECTION.split("/"),
@@ -588,7 +588,7 @@ fdescribe('MultiObjectSelectionComponent', () => {
     // For example, check if the multiObjectDataForQuery contains the filtered options
   });
 
-  it('should set empty prepared data if isClientSideSearchAllowed is true and no matches found', () => {
+  it('queryTrigger::should set empty prepared data if isClientSideSearchAllowed is true and no matches found', () => {
     // Arrange
     component.sectionConfigData = cloneDeep(gloablSectionConfigData)
     component.isClientSideSearchAllowed = true;
@@ -612,7 +612,7 @@ fdescribe('MultiObjectSelectionComponent', () => {
     // For example, check if the multiObjectDataForQuery contains no options
   });
 
-  it('should not set prepared data if isClientSideSearchAllowed is false', () => {
+  it('queryTrigger::should not set prepared data if isClientSideSearchAllowed is false', () => {
     // Arrange
     component.isClientSideSearchAllowed = false;
     component['_flattenDropdownOptions'] = [
@@ -633,6 +633,86 @@ fdescribe('MultiObjectSelectionComponent', () => {
     expect(component.multiObjectDataForQuery).toBeUndefined();
     // Add assertions to check that multiObjectDataForQuery is not set
   });
+
+  it('queryTrigger::should set searchLoading to true when isAsynchronousSearch is true and emit onQuerySearch event', fakeAsync(() => {
+    // Arrange
+    component.sectionConfigData = cloneDeep(gloablSectionConfigData)
+
+    component.isAsynchronousSearch = true;
+    component.searchLoading = false;
+    const queryString = 'someValue';
+    const onQuerySearchSpy = spyOn(component.onQuerySeach, 'emit');
+
+    // Act
+    component.queryTrigger(queryString);
+    tick();
+
+    // Assert
+    expect(component.searchLoading).toBe(true);
+    expect(onQuerySearchSpy).toHaveBeenCalled();
+  }));
+
+  it('queryTrigger::should update multiObjectDataForQuery with search results on successful search', fakeAsync(() => {
+    // Arrange
+    component.sectionConfigData = cloneDeep(gloablSectionConfigData)
+
+    component.isAsynchronousSearch = true;
+    component.searchLoading = true;
+    const queryString = 'someValue';
+    const mockSearchResult = [{ dataUniqueFieldValue: '1', /* other properties */ }];
+    spyOn(component.onQuerySeach, 'emit').and.callFake((event: any) => {
+      event.onResult(mockSearchResult);
+    });
+
+    // Act
+    component.queryTrigger(queryString);
+    tick();
+
+    // Assert
+    expect(component.searchLoading).toBe(false);
+    expect(component.multiObjectDataForQuery?.dropDownSections[0].children).toEqual(mockSearchResult);
+  }));
+
+  it('queryTrigger::should handle empty search result array', fakeAsync(() => {
+    // Arrange
+    component.sectionConfigData = cloneDeep(gloablSectionConfigData)
+
+    component.isAsynchronousSearch = true;
+    component.searchLoading = true;
+    const queryString = 'someValue';
+    spyOn(component.onQuerySeach, 'emit').and.callFake((event: any) => {
+      event.onResult([]);
+    });
+
+    // Act
+    component.queryTrigger(queryString);
+    tick();
+
+    // Assert
+    expect(component.searchLoading).toBe(false);
+    expect(component.multiObjectDataForQuery?.dropDownSections[0].children).toEqual([]);
+  }));
+
+  it('queryTrigger::should handle error during asynchronous search', fakeAsync(() => {
+    // Arrange
+    component.sectionConfigData = cloneDeep(gloablSectionConfigData)
+
+    component.isAsynchronousSearch = true;
+    component.searchLoading = true;
+    const queryString = 'someValue';
+    spyOn(component.onQuerySeach, 'emit').and.callFake((event: any) => {
+      event.onError();
+    });
+
+    // Act
+    component.queryTrigger(queryString);
+    tick();
+
+    // Assert
+    expect(component.searchLoading).toBe(false);
+    // Ensure that multiObjectDataForQuery is reset on error
+    expect(component.multiObjectDataForQuery?.dropDownSections[0].children).toEqual([]);
+  }));
 
   it('activateLastChip::should not activate the last chip when query box is not empty', fakeAsync(() => {
     // Arrange
@@ -1085,8 +1165,6 @@ fdescribe('MultiObjectSelectionComponent', () => {
     // Add more specific assertions based on your expectations
   });
 
-  // Selecting an option adds it to chipData and sets isSelected to true for the corresponding option
-  // Test case: Deselect an option when maxSelectCount is reached
   it('optionSelectionTrigger::should deselect an option and trigger chipRemovalTrigger when selected is true and maxSelectCount is reached', () => {
     const optionsData: DropDownDataOption = {
       dataVisibleNameValue: 'Option 1',
@@ -1537,7 +1615,6 @@ fdescribe('MultiObjectSelectionComponent', () => {
     expect(component.selectionChange.emit).toHaveBeenCalled();
     // Add more assertions as needed
   });
-
 
   it('openDropdown::should emit initialLoad event with true when openDropdown is called', () => {
     // Arrange
@@ -2398,4 +2475,216 @@ fdescribe('MultiObjectSelectionComponent', () => {
     expect(component.isHierarchySelectionModificationAllowed).toBe(true);
   });
 
+  it('_valueSelectTreeTraversal::should return false if the child is disabled', () => {
+    // Arrange
+    const child: DropDownDataOption = { isDisabled: true };
+
+    // Act
+    const result = component['_valueSelectTreeTraversal'](true, [], child);
+
+    // Assert
+    expect(result).toBe(false);
+  });
+
+  it('_valueSelectTreeTraversal::should set isSelected to true and isPartiallySelected to false if child matches and is not disabled', () => {
+    // Arrange
+    const triggerValue = true;
+    const child: DropDownDataOption = { isSelected: false, isPartiallySelected: true, isDisabled: false };
+    const parent: DropDownDataOption[] = [child];
+
+    // Act
+    const result = component['_valueSelectTreeTraversal'](triggerValue, parent, child);
+
+    // Assert
+    expect(child.isSelected).toBe(triggerValue);
+    expect(child.isPartiallySelected).toBe(true);
+    expect(result).toBe(true);
+  });
+
+  it('_valueSelectTreeTraversal::should set isSelected to false and isPartiallySelected to false if triggerValue is false', () => {
+    // Arrange
+    const triggerValue = false;
+    const child: DropDownDataOption = { isSelected: true, isPartiallySelected: true, isDisabled: false };
+    const parent: DropDownDataOption[] = [child];
+
+    // Act
+    const result = component['_valueSelectTreeTraversal'](triggerValue, parent, child);
+
+    // Assert
+    expect(child.isSelected).toBe(false);
+    expect(child.isPartiallySelected).toBe(false);
+    expect(result).toBe(true);
+  });
+
+  it('_valueSelectTreeTraversal::should handle hierarchy and set isPartiallySelected for parent based on children', () => {
+    // Arrange
+    const triggerValue = true;
+    component.isHierarchySelectionModificationAllowed = true;
+    const child2: DropDownDataOption = { isSelected: false, isPartiallySelected: true, isDisabled: false, children: [] };
+    const child1: DropDownDataOption = { isSelected: false, isPartiallySelected: true, isDisabled: false, children: [child2] };
+    const parent: DropDownDataOption = { isSelected: false, isPartiallySelected: false, isDisabled: false, children: [child1] };
+
+    // Act
+    const result = component['_valueSelectTreeTraversal'](triggerValue, [parent], child1, true);
+
+    // Assert
+    expect(parent.isPartiallySelected).toBe(false);
+    expect(child1.isSelected).toBe(triggerValue);
+    expect(child1.isPartiallySelected).toBe(false);
+    expect(child2.isSelected).toBe(true);
+    expect(child2.isPartiallySelected).toBe(true);
+    expect(result).toBe(true);
+  });
+
+  it('_modifyChipSection::should do nothing when data is falsy', () => {
+    // Arrange
+    let falsyData: any;
+  
+    // Act
+    component['_modifyChipSection'](falsyData);
+  
+    // Assert
+    // Check that no modifications occurred, for example, assert that chipData remains unchanged
+    expect(component.chipData.length).toBe(0);
+    // Add more assertions based on your specific implementation
+  });
+  
+  it('_modifyChipSection::should do nothing when data is an empty array', () => {
+    // Arrange
+    const emptyData: DropDownDataOption[] = [];
+  
+    // Act
+    component['_modifyChipSection'](emptyData);
+  
+    // Assert
+    // Check that no modifications occurred, for example, assert that chipData remains unchanged
+    expect(component.chipData.length).toBe(0);
+    // Add more assertions based on your specific implementation
+  });
+  
+  it('_modifyChipSection::should add to chipData when hierarchy selection modification is allowed and criteria met', () => {
+    // Arrange
+    const dataWithHierarchy: DropDownDataOption[] = [
+      {
+        dataVisibleNameValue: 'Option 1',
+        levelIndex: 0,
+        isDisabled: false,
+      },
+    ];
+    component.isHierarchySelectionModificationAllowed = true;
+  
+    // Act
+    component['_modifyChipSection'](dataWithHierarchy);
+  
+    // Assert
+    expect(component.chipData.length).toBe(0);
+    // Add more specific assertions based on your implementation and the data used
+  });
+
+  it('_modifyChipSection::should add to chipData and remove children from chipData when hierarchy selection modification is allowed and criteria met', () => {
+    // Arrange
+    const dataWithHierarchy: DropDownDataOption[] = [
+      {
+        dataVisibleNameValue: 'Parent Option',
+        levelIndex: 1,
+        isDisabled: false,
+        children: [
+          {
+            dataVisibleNameValue: 'Child Option',
+            isDisabled: false,
+          },
+        ],
+      },
+    ];
+    component.isHierarchySelectionModificationAllowed = true;
+  
+    // Act
+    component['_modifyChipSection'](dataWithHierarchy);
+  
+    // Assert
+    expect(component.chipData.length).toBe(0);
+    // Add more specific assertions based on your implementation and the data used
+  });
+  
+  it('_modifyChipSection::should not add to chipData when hierarchy selection modification is allowed but criteria not met', () => {
+    // Arrange
+    const dataWithHierarchyNotMeetingCriteria: DropDownDataOption[] = [
+      {
+        dataVisibleNameValue: 'Parent Option',
+        levelIndex: 0,
+        isDisabled: false,
+        children: [
+          {
+            dataVisibleNameValue: 'Child Option',
+            isDisabled: false,
+          },
+        ],
+      },
+    ];
+    component.isHierarchySelectionModificationAllowed = true;
+  
+    // Act
+    component['_modifyChipSection'](dataWithHierarchyNotMeetingCriteria);
+  
+    // Assert
+    expect(component.chipData.length).toBe(0);
+    // Add more specific assertions based on your implementation and the data used
+  });
+  
+  it('_modifyChipSection::should not add to chipData when hierarchy selection modification is not allowed', () => {
+    // Arrange
+    const dataWithoutHierarchy: DropDownDataOption[] = [
+      {
+        dataVisibleNameValue: 'Option without Hierarchy',
+        isDisabled: false,
+      },
+    ];
+    component.isHierarchySelectionModificationAllowed = false;
+  
+    // Act
+    component['_modifyChipSection'](dataWithoutHierarchy);
+  
+    // Assert
+    expect(component.chipData.length).toBe(0);
+    // Add more specific assertions based on your implementation and the data used
+  });
+
+  it('_modifyChipSection::should remove chipData based on conditions when hierarchy selection modification is allowed', () => {
+    // Arrange
+    spyOn(component.onChipRemove, 'emit');
+    component.isHierarchySelectionModificationAllowed = true;
+    const chipDataWithHierarchy: SelectionChip[] = [
+      { dataUniqueFieldValue: '1', isSelected: false },
+      { dataUniqueFieldValue: '2', isSelected: true },
+      { dataUniqueFieldValue: '3', isSelected: false },
+    ];
+    component.chipData = chipDataWithHierarchy;
+    const dataToRemove: DropDownDataOption = { dataUniqueFieldValue: '2', isSelected: true };
+  
+    // Act
+    component['_modifyChipSection']([dataToRemove]);
+  
+    // Assert
+    expect(component.chipData.length).toBe(3);
+    expect(component.chipData.find(chip => chip.dataUniqueFieldValue === '2')).toBeDefined();
+  });
+  
+  it('_modifyChipSection::should remove chipData based on conditions when hierarchy selection modification is not allowed', () => {
+    // Arrange
+    component.isHierarchySelectionModificationAllowed = false;
+    const chipDataWithoutHierarchy: SelectionChip[] = [
+      { dataUniqueFieldValue: '1', isSelected: false },
+      { dataUniqueFieldValue: '2', isSelected: true },
+      { dataUniqueFieldValue: '3', isSelected: false },
+    ];
+    component.chipData = chipDataWithoutHierarchy;
+    const dataToRemove: DropDownDataOption = { dataUniqueFieldValue: '2', isSelected: true };
+  
+    // Act
+    component['_modifyChipSection']([dataToRemove]);
+  
+    // Assert
+    expect(component.chipData.length).toBe(3);
+  });
+  
 });
