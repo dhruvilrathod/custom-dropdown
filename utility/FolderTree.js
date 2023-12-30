@@ -1,7 +1,46 @@
 class TreeNode {
-    constructor(key, value = key, parent = null) {
-        this.key = key;
-        this.value = value;
+
+    isSelected;
+    isDisabled;
+    isReadOnly;
+    isExpanded;
+    isChildernLoading;
+    levelIndex;
+    isPartiallySelected;
+    dataUniqueFieldValue;
+    dataVisibleNameValue;
+    dataTooltipValue;
+    dataExpandableValue;
+    dataFavouriteValue;
+    dataTotalDocsValue;
+    children;
+    originalData;
+    parent;
+    onExpand;
+    onCollaps;
+    onSelect;
+    onDeselect;
+
+    constructor(value, config, parent = null, levelIndex = 0) {
+
+        // fields which are related to identity of the node, possibly acquiring no changes at runtime
+        this.isDisabled = TreeUtility.propertyAccess(value, config.dataDisabledSrc) || false;
+        this.isReadOnly = TreeUtility.propertyAccess(value, config.dataReadOnlySrc) || false;
+        this.dataUniqueFieldValue = TreeUtility.propertyAccess(value, config.dataUniqueFieldSrc);
+        this.dataVisibleNameValue = TreeUtility.propertyAccess(value, config.dataVisibleNameSrc);
+        this.dataTooltipValue = TreeUtility.propertyAccess(value, config.dataTooltipSrc);
+        this.dataExpandableValue = TreeUtility.propertyAccess(value, config.dataExpandableSrc);
+        this.dataFavouriteValue = TreeUtility.propertyAccess(value, config.dataFavouriteSrc);
+        this.dataTotalDocsValue = TreeUtility.propertyAccess(value, config.dataTotalDocsSrc);
+        this.originalData = value;
+        
+        // fields which are used to manage UI states and functionalities at the runtime
+        this.isSelected = value.isSelected || false;
+        this.isExpanded = value.isExpanded || false;
+        this.isChildernLoading = value.isChildernLoading || false;
+        this.isPartiallySelected = value.isPartiallySelected || false;
+
+        this.levelIndex = parent ? (parent.levelIndex + 1) : levelIndex;
         this.parent = parent;
         this.children = [];
     }
@@ -16,8 +55,51 @@ class TreeNode {
 }
 
 class Tree {
-    constructor(key, value = key) {
-        this.root = new TreeNode(key, value);
+
+    root;
+
+    config;
+
+    dataUniqueFieldSrc;
+    dataVisibleNameSrc;
+    dataTooltipSrc;
+    dataExpandableSrc;
+    dataChildrenSrc;
+    dataFavouriteSrc;
+    dataTotalDocsSrc;
+    dataParentUniqueIdsSrc;
+    dataDisabledSrc;
+    dataReadOnlySrc;
+
+
+    constructor(config, rootValue) {
+
+        this.dataUniqueFieldSrc = config.dataUniqueFieldSrc;
+        this.dataVisibleNameSrc = config.dataVisibleNameSrc;
+        this.dataTooltipSrc = config.dataTooltipSrc;
+        this.dataExpandableSrc = config.dataExpandableSrc;
+        this.dataChildrenSrc = config.dataChildrenSrc;
+        this.dataFavouriteSrc = config.dataFavouriteSrc;
+        this.dataTotalDocsSrc = config.dataTotalDocsSrc;
+        this.dataParentUniqueIdsSrc = config.dataParentUniqueIdsSrc;
+        this.dataDisabledSrc = config.dataDisabledSrc;
+        this.dataReadOnlySrc = config.dataReadOnlySrc;
+
+        this.config = config;
+
+        this.root = new TreeNode({
+            isSelected: rootValue.isSelected,
+            isDisabled: rootValue.isDisabled,
+            isExpanded: rootValue.isExpanded,
+            isChildernLoading: rootValue.isChildernLoading,
+            isPartiallySelected: rootValue.isPartiallySelected,
+            dataUniqueFieldValue: rootValue.sectionId,
+            dataVisibleNameValue: rootValue.sectionNameKey,
+            dataTooltipValue: rootValue.sectionTooltipKey,
+            dataExpandableValue: rootValue.isExpandable,
+            dataFavouriteValue: rootValue.isFavourite,
+            dataTotalDocsValue: rootValue.totalDocs,
+        }, config);
     }
 
     *preOrderTraversal(node = this.root) {
@@ -38,10 +120,10 @@ class Tree {
         yield node;
     }
 
-    insert(parentNodeKey, key, value = key) {
+    insert(dataUniqueFieldValue, value) {
         for (let node of this.preOrderTraversal()) {
-            if (node.key === parentNodeKey) {
-                node.children.push(new TreeNode(key, value, node));
+            if (node.dataUniqueFieldValue === dataUniqueFieldValue) {
+                node.children.push(new TreeNode(value, this.config, node));
                 return true;
             }
         }
@@ -50,7 +132,7 @@ class Tree {
 
     remove(key) {
         for (let node of this.preOrderTraversal()) {
-            const filtered = node.children.filter(c => c.key !== key);
+            const filtered = node.children.filter(c => c.dataUniqueFieldValue !== key);
             if (filtered.length !== node.children.length) {
                 node.children = filtered;
                 return true;
@@ -61,17 +143,38 @@ class Tree {
 
     find(key) {
         for (let node of this.preOrderTraversal()) {
-            if (node.key === key) return node;
+            if (node.dataUniqueFieldValue === key) return node;
         }
         return undefined;
     }
 }
 
-let myTree = new Tree(1, "root");
+class TreeUtility {
+    
+    constructor() {}
 
-myTree.insert(1, 2, "first child");
-myTree.insert(1, 3, "second child");
-myTree.insert(1, 4, "third child");
+    static propertyAccess(dataObj, path) {
 
-console.log(myTree.root);
-console.log(myTree.find(2));
+        if (!path || typeof path !== "string" || path === "" || path === null) {
+          return '';
+        }
+    
+        path = path.split("/");
+
+        let value;
+    
+        if (path.length === 1) {
+          value = dataObj[path[0]];
+        }
+        else {
+    
+          value = cloneDeep(dataObj);
+    
+          for (let k = 0, pathLen = path.length; k < pathLen; k++) {
+            value = value[path[k]];
+          }
+        }
+    
+        return value;
+      }
+}

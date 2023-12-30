@@ -1,77 +1,193 @@
-// class TreeNode {
+interface TreeFieldsSrcConfigurations {
+    dataUniqueFieldSrc: string;
+    dataVisibleNameSrc: string;
+    dataTooltipSrc?: string;
+    dataExpandableSrc?: string;
+    dataChildrenSrc?: string;
+    dataFavouriteSrc?: string;
+    dataTotalDocsSrc?: string;
+    dataParentUniqueIdsSrc?: string;
+    dataDisabledSrc?: string;
+    dataReadOnlySrc?: string;
+}
 
-//     private _key: any;
-//     private _value: any;
-//     private _parent: any;
-//     private _children: any;
+class TreeNode {
 
-//     constructor(key: any, value: any = key, parent: any = null) {
-//         this._key = key;
-//         this._value = value;
-//         this._parent = parent;
-//         this._children = [];
-//     }
+    isSelected?: boolean;
+    isDisabled?: boolean;
+    isReadOnly?: boolean;
+    isExpanded?: boolean;
+    isChildernLoading?: boolean;
+    levelIndex?: number;
+    isPartiallySelected?: boolean;
+    dataUniqueFieldValue: string | number;
+    dataVisibleNameValue: string;
+    dataTooltipValue?: string;
+    dataExpandableValue?: boolean;
+    dataFavouriteValue?: boolean;
+    dataTotalDocsValue?: number;
+    children: TreeNode[];
+    originalData?: any;
+    parent?: TreeNode;
 
-//     get isLeaf() {
-//         return this._children.length === 0;
-//     }
+    onExpand!: Function;
+    onCollaps!: Function;
+    onSelect!: Function;
+    onDeselect!: Function;
 
-//     get hasChildren() {
-//         return !this.isLeaf;
-//     }
-// }
+    constructor(value: any, config: TreeFieldsSrcConfigurations, parent?: TreeNode, levelIndex: number = 0) {
 
-// class Tree {
+        // fields which are related to identity of the node, possibly acquiring no changes at runtime
+        this.isDisabled = config.dataDisabledSrc ? TreeUtility.propertyAccess(value, config.dataDisabledSrc) : false;
+        this.isReadOnly = config.dataReadOnlySrc ? TreeUtility.propertyAccess(value, config.dataReadOnlySrc) : false;
+        this.dataUniqueFieldValue = TreeUtility.propertyAccess(value, config.dataUniqueFieldSrc);
+        this.dataVisibleNameValue = TreeUtility.propertyAccess(value, config.dataVisibleNameSrc);
+        this.dataTooltipValue = config.dataTooltipSrc ? TreeUtility.propertyAccess(value, config.dataTooltipSrc) : TreeUtility.propertyAccess(value, config.dataVisibleNameSrc);
+        this.dataExpandableValue = config.dataExpandableSrc ? TreeUtility.propertyAccess(value, config.dataExpandableSrc) : false;
+        this.dataFavouriteValue = config.dataFavouriteSrc ? TreeUtility.propertyAccess(value, config.dataFavouriteSrc) : false;
+        this.dataTotalDocsValue = config.dataTotalDocsSrc ? TreeUtility.propertyAccess(value, config.dataTotalDocsSrc) : false;
+        this.originalData = value;
 
-//     private _root: TreeNode;
-    
-//     constructor(key: any, value: any = key) {
-//         this._root = new TreeNode(key, value);
-//     }
+        // fields which are used to manage UI states and functionalities at the runtime
+        this.isSelected = value.isSelected || false;
+        this.isExpanded = value.isExpanded || false;
+        this.isChildernLoading = value.isChildernLoading || false;
+        this.isPartiallySelected = value.isPartiallySelected || false;
 
-//     *preOrderTraversal(node = this._root) {
-//         yield node;
-//         if (node.children.length) {
-//             for (let child of node.children) {
-//                 yield* this.preOrderTraversal(child);
-//             }
-//         }
-//     }
+        this.levelIndex = parent && parent.levelIndex ? (parent.levelIndex + 1) : levelIndex;
+        this.parent = parent;
+        this.children = [];
+    }
 
-//     *postOrderTraversal(node = this._root) {
-//         if (node._children.length) {
-//             for (let child of node.children) {
-//                 yield* this.postOrderTraversal(child);
-//             }
-//         }
-//         yield node;
-//     }
+    get isLeaf() {
+        return this.children.length === 0;
+    }
 
-//     insert(parentNodeKey: any, key: any, value = key) {
-//         for (let node of this.preOrderTraversal()) {
-//             if (node._key === parentNodeKey) {
-//                 node._children.push(new TreeNode(key, value, node));
-//                 return true;
-//             }
-//         }
-//         return false;
-//     }
+    get hasChildren() {
+        return !this.isLeaf;
+    }
+}
 
-//     remove(key: any) {
-//         for (let node of this.preOrderTraversal()) {
-//             const filtered = node._children.filter((c: any) => c._key !== key);
-//             if (filtered.length !== node._children.length) {
-//                 node._children = filtered;
-//                 return true;
-//             }
-//         }
-//         return false;
-//     }
+class Tree {
 
-//     find(key: any) {
-//         for (let node of this.preOrderTraversal()) {
-//             if (node._key === key) return node;
-//         }
-//         return undefined;
-//     }
-// }
+    root: TreeNode;
+    config: TreeFieldsSrcConfigurations;
+
+    constructor(config: TreeFieldsSrcConfigurations, rootValue: any) {
+
+        this.config = config;
+
+        this.root = new TreeNode(rootValue, config);
+    }
+
+    *preOrderTraversal(node = this.root): Generator<TreeNode> {
+        yield node;
+        if (node.children.length) {
+            for (let child of node.children) {
+                yield* this.preOrderTraversal(child);
+            }
+        }
+    }
+
+    *postOrderTraversal(node = this.root): Generator<TreeNode> {
+        if (node.children.length) {
+            for (let child of node.children) {
+                yield* this.postOrderTraversal(child);
+            }
+        }
+        yield node;
+    }
+
+    insert(dataUniqueFieldValue: string | number, value: any): boolean {
+        for (let node of this.preOrderTraversal()) {
+            if (node.dataUniqueFieldValue === dataUniqueFieldValue) {
+                node.children.push(new TreeNode(value, this.config, node));
+                return true;
+            }
+        }
+        return false;
+    }
+
+    remove(key: string | number): boolean {
+        for (let node of this.preOrderTraversal()) {
+            const filtered = node.children.filter(c => c.dataUniqueFieldValue !== key);
+            if (filtered.length !== node.children.length) {
+                node.children = filtered;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    find(dataUniqueFieldValue: string | number): TreeNode | undefined {
+        for (let node of this.preOrderTraversal()) {
+            if (node.dataUniqueFieldValue === dataUniqueFieldValue) return node;
+        }
+        return undefined;
+    }
+}
+
+class TreeUtility {
+
+    constructor() { }
+
+    static propertyAccess(dataObj: any, path: string): any {
+
+        if (!path || typeof path !== "string" || path === "" || path === null) {
+            return '';
+        }
+        let pathArr: string[] = path.split("/");
+        let value;
+        if (pathArr.length === 1) {
+            value = dataObj[pathArr[0]];
+        }
+        else {
+            value = structuredClone(dataObj);
+            for (let k = 0, pathArrLen = pathArr.length; k < pathArrLen; k++) {
+                value = value[pathArr[k]];
+            }
+        }
+        return value;
+    }
+
+    static traverseAllNodes(tree: Tree): void {
+    }
+}
+
+let data: any[] = [
+    {
+        folder_id: "1",
+        folderName: "aaa"
+    },
+    {
+        folder_id: "2",
+        folderName: "bbb"
+    }
+];
+
+let data2: any[] = [
+    {
+        folder_id: "21",
+        folderName: "2aaa"
+    },
+    {
+        folder_id: "22",
+        folderName: "2bbb"
+    }
+];
+
+
+let mySection: Tree = new Tree({
+    dataUniqueFieldSrc: "folder_id",
+    dataVisibleNameSrc: "folderName",
+}, {
+    folder_id: "0",
+    folderName: "Folders",
+});
+
+data.forEach((val) => mySection.insert("0", val));
+data2.forEach((val) => mySection.insert("2", val));
+
+mySection.find("1") && (mySection.find("1")!.isSelected = true);
+
+console.log(mySection.find("2")?.dataVisibleNameValue, mySection.find("2")?.isSelected);
