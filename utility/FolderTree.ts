@@ -1,4 +1,4 @@
-interface TreeFieldsSrcConfigurations {
+interface ITreeFieldsSrcConfigurations {
     dataUniqueFieldSrc: string;
     dataVisibleNameSrc: string;
     dataTooltipSrc?: string;
@@ -11,7 +11,80 @@ interface TreeFieldsSrcConfigurations {
     dataReadOnlySrc?: string;
 }
 
-class TreeNode {
+interface ITreeUtility {
+
+}
+
+interface TreeUtility {
+    propertyAccess: typeof TreeUtility.propertyAccess;
+    traverseAllNodes: typeof TreeUtility.traverseAllNodes;
+}
+
+
+interface IOperatorFunction {
+    (node: TreeNode): void;
+}
+
+interface ITree {
+    root: TreeNode;
+    config: ITreeFieldsSrcConfigurations;
+    preOrderTraversal(node?: TreeNode): Generator<TreeNode>
+    postOrderTraversal(node?: TreeNode): Generator<TreeNode>;
+    insert(dataUniqueFieldValue: string | number, value: any): boolean;
+    remove(key: string | number): boolean;
+    find(dataUniqueFieldValue: string | number): TreeNode | undefined;
+}
+
+interface IDropDownTreeConfig extends ITreeFieldsSrcConfigurations {
+    isRequired?: boolean;
+    isDisabled?: boolean;
+    isSingularInput?: boolean;
+    isReadonly?: boolean;
+    isCustomInputAllowed?: boolean;
+    isSearchAllowed?: boolean;
+    isAsynchronousSearch?: boolean;
+    isClientSideSearchAllowed?: boolean;
+    isResetOptionVisible?: boolean;
+    isSelectAllAvailable?: boolean;
+    isMultipleLevel?: boolean;
+    isAsynchronouslyExpandable?: boolean;
+    isHierarchySelectionModificationAllowed?: boolean;
+    isCustomAllSelectOption?: boolean;
+    minSelectCount?: number;
+    maxSelectCount?: number;
+}
+
+interface IDropDownTree extends ITree {
+    selectAll(isReset?: boolean): void;
+}
+
+interface ITreeNode {
+    isSelected?: boolean;
+    isDisabled?: boolean;
+    isReadOnly?: boolean;
+    isExpanded?: boolean;
+    isChildernLoading?: boolean;
+    levelIndex?: number;
+    isPartiallySelected?: boolean;
+    isAllChildrenSelected?: boolean;
+    dataUniqueFieldValue: string | number;
+    dataVisibleNameValue: string;
+    dataTooltipValue?: string;
+    dataExpandableValue?: boolean;
+    dataFavouriteValue?: boolean;
+    dataTotalDocsValue?: number;
+    children: TreeNode[];
+    originalData?: any;
+    parent?: TreeNode;
+    isLeaf: boolean;
+    hasChildren: boolean;
+    onExpand: Function;
+    onCollaps: Function;
+    onSelect: Function;
+    onDeselect: Function;
+}
+
+class TreeNode implements ITreeNode {
 
     isSelected?: boolean;
     isDisabled?: boolean;
@@ -20,6 +93,7 @@ class TreeNode {
     isChildernLoading?: boolean;
     levelIndex?: number;
     isPartiallySelected?: boolean;
+    isAllChildrenSelected?: boolean;
     dataUniqueFieldValue: string | number;
     dataVisibleNameValue: string;
     dataTooltipValue?: string;
@@ -35,7 +109,7 @@ class TreeNode {
     onSelect!: Function;
     onDeselect!: Function;
 
-    constructor(value: any, config: TreeFieldsSrcConfigurations, parent?: TreeNode, levelIndex: number = 0) {
+    constructor(value: any, config: ITreeFieldsSrcConfigurations, parent?: TreeNode, levelIndex: number = 0, nodeType = 2) {        
 
         // fields which are related to identity of the node, possibly acquiring no changes at runtime
         this.isDisabled = config.dataDisabledSrc ? TreeUtility.propertyAccess(value, config.dataDisabledSrc) : false;
@@ -45,7 +119,7 @@ class TreeNode {
         this.dataTooltipValue = config.dataTooltipSrc ? TreeUtility.propertyAccess(value, config.dataTooltipSrc) : TreeUtility.propertyAccess(value, config.dataVisibleNameSrc);
         this.dataExpandableValue = config.dataExpandableSrc ? TreeUtility.propertyAccess(value, config.dataExpandableSrc) : false;
         this.dataFavouriteValue = config.dataFavouriteSrc ? TreeUtility.propertyAccess(value, config.dataFavouriteSrc) : false;
-        this.dataTotalDocsValue = config.dataTotalDocsSrc ? TreeUtility.propertyAccess(value, config.dataTotalDocsSrc) : false;
+        this.dataTotalDocsValue = config.dataTotalDocsSrc ? TreeUtility.propertyAccess(value, config.dataTotalDocsSrc) : 0;
         this.originalData = value;
 
         // fields which are used to manage UI states and functionalities at the runtime
@@ -53,27 +127,27 @@ class TreeNode {
         this.isExpanded = value.isExpanded || false;
         this.isChildernLoading = value.isChildernLoading || false;
         this.isPartiallySelected = value.isPartiallySelected || false;
-
-        this.levelIndex = parent && parent.levelIndex ? (parent.levelIndex + 1) : levelIndex;
+        this.isAllChildrenSelected = value.isAllChildrenSelected || false;
+        this.levelIndex = parent && parent.levelIndex !== undefined ? parent.levelIndex + 1 : levelIndex;
         this.parent = parent;
-        this.children = [];
+        this.children = [];        
     }
 
-    get isLeaf() {
+    get isLeaf(): boolean {
         return this.children.length === 0;
     }
 
-    get hasChildren() {
+    get hasChildren(): boolean {
         return !this.isLeaf;
     }
 }
 
-class Tree {
+class Tree implements ITree {
 
     root: TreeNode;
-    config: TreeFieldsSrcConfigurations;
+    config: ITreeFieldsSrcConfigurations;
 
-    constructor(config: TreeFieldsSrcConfigurations, rootValue: any) {
+    constructor(config: ITreeFieldsSrcConfigurations, rootValue: any) {
 
         this.config = config;
 
@@ -127,7 +201,7 @@ class Tree {
     }
 }
 
-class TreeUtility {
+class TreeUtility implements ITreeUtility {
 
     constructor() { }
 
@@ -150,8 +224,43 @@ class TreeUtility {
         return value;
     }
 
-    static traverseAllNodes(tree: Tree): void {
+    static traverseAllNodes(tree: Tree, operatorFunction?: IOperatorFunction): void {
+        for (let node of tree.preOrderTraversal()) {
+            operatorFunction && operatorFunction(node);
+            console.log(node.dataUniqueFieldValue, node.dataVisibleNameValue, node.isSelected);
+        }
     }
+}
+
+class DropdownTree extends Tree implements IDropDownTree {
+
+
+    constructor(config: IDropDownTreeConfig, rootValue: any) {
+
+        super(config, rootValue);
+
+    }
+
+
+    public selectAll(isReset: boolean = false): void {        
+        TreeUtility.traverseAllNodes(this, (node: TreeNode) => {
+            node.isSelected = !isReset;
+            node.children && node.children.length > 0 && (node.isAllChildrenSelected = !isReset);
+        });
+    }
+
+    public getCurrentSelectedNodesArray(): Array<TreeNode> {
+        let selectedNodes: TreeNode[] = []
+        
+        TreeUtility.traverseAllNodes(this, (node: TreeNode) => {
+            if(node.levelIndex && node.levelIndex > 0 && node.isSelected === true) {
+                selectedNodes.push(node);
+            }
+        });
+
+        return selectedNodes;
+    }
+
 }
 
 let data: any[] = [
@@ -177,7 +286,7 @@ let data2: any[] = [
 ];
 
 
-let mySection: Tree = new Tree({
+let mySection: DropdownTree = new DropdownTree({
     dataUniqueFieldSrc: "folder_id",
     dataVisibleNameSrc: "folderName",
 }, {
@@ -189,5 +298,7 @@ data.forEach((val) => mySection.insert("0", val));
 data2.forEach((val) => mySection.insert("2", val));
 
 mySection.find("1") && (mySection.find("1")!.isSelected = true);
+mySection.find("21") && (mySection.find("21")!.isSelected = true);
+console.log(mySection.getCurrentSelectedNodesArray().length);
 
-console.log(mySection.find("2")?.dataVisibleNameValue, mySection.find("2")?.isSelected);
+// console.log(mySection.find("2")?.dataVisibleNameValue, mySection.find("2")?.isSelected);
