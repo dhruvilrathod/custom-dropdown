@@ -9,6 +9,8 @@ import { MultiObjectSelectionChipComponent } from './multi-object-select/multi-o
 import { MultiObjectDropdownComponent } from './multi-object-select/multi-object-dropdown/multi-object-dropdown.component';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { SamplePopoverComponent } from './sample/sample-popover/sample-popover.component';
+import { CustomSelectComponent } from './shared/custom-select/custom-select.component';
+import { CustomChipsComponent } from './shared/custom-chips/custom-chips.component';
 
 @NgModule({
   declarations: [
@@ -16,7 +18,9 @@ import { SamplePopoverComponent } from './sample/sample-popover/sample-popover.c
     MultiObjectSelectionComponent,
     MultiObjectSelectionChipComponent,
     MultiObjectDropdownComponent,
-    SamplePopoverComponent
+    SamplePopoverComponent,
+    CustomSelectComponent,
+    CustomChipsComponent
   ],
   imports: [
     BrowserModule,
