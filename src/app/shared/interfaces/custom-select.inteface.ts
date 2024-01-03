@@ -23,6 +23,7 @@ export interface IDropDownTree extends ITree {
     validState: boolean;
     selectAll(isReset?: boolean): void;
     nodeSelection(dataUniqueFieldValue: string | number, selectionVal?: boolean): void;
+    changeNodeDisablility(isDisabled?: boolean): void;
 }
 
 export interface IExternalDataRequest {

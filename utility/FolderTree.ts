@@ -52,11 +52,15 @@
 //     validState: boolean;
 //     selectAll(isReset?: boolean): void;
 //     nodeSelection(dataUniqueFieldValue: string | number, selectionVal?: boolean): void;
+//     changeNodeDisablility(isDisabled?: boolean): void;
 // }
 
 // interface ITreeNode {
 //     isSelected?: boolean;
 //     isDisabled?: boolean;
+//     isActive: boolean;
+//     isFavourite: boolean;
+//     isInvalid: boolean;
 //     isReadOnly?: boolean;
 //     isExpanded?: boolean;
 //     isChildernLoading?: boolean;
@@ -85,6 +89,9 @@
 
 //     isSelected?: boolean;
 //     isDisabled?: boolean;
+//     isActive: boolean;
+//     isFavourite: boolean;
+//     isInvalid: boolean;
 //     isReadOnly?: boolean;
 //     isExpanded?: boolean;
 //     isChildernLoading?: boolean;
@@ -108,19 +115,22 @@
 //     constructor(value: any, config: ITreeFieldsSrcConfigurations, parent?: TreeNode, levelIndex: number = 0) {
 
 //         // fields which are related to identity of the node, possibly acquiring no changes at runtime
-//         this.isDisabled = config.dataDisabledSrc !== undefined ? TreeUtility.propertyAccess(value, config.dataDisabledSrc) : false;
-//         this.isReadOnly = config.dataReadOnlySrc !== undefined ? TreeUtility.propertyAccess(value, config.dataReadOnlySrc) : false;
-//         this.dataUniqueFieldValue = TreeUtility.propertyAccess(value, config.dataUniqueFieldSrc);
-//         this.dataVisibleNameValue = TreeUtility.propertyAccess(value, config.dataVisibleNameSrc);
-//         this.dataTooltipValue = config.dataTooltipSrc !== undefined ? TreeUtility.propertyAccess(value, config.dataTooltipSrc) : TreeUtility.propertyAccess(value, config.dataVisibleNameSrc);
-//         this.dataExpandableValue = config.dataExpandableSrc !== undefined ? TreeUtility.propertyAccess(value, config.dataExpandableSrc) : false;
-//         this.dataFavouriteValue = config.dataFavouriteSrc !== undefined ? TreeUtility.propertyAccess(value, config.dataFavouriteSrc) : false;
-//         this.dataTotalDocsValue = config.dataTotalDocsSrc !== undefined ? TreeUtility.propertyAccess(value, config.dataTotalDocsSrc) : 0;
+//         this.isDisabled = config.dataDisabledSrc !== undefined ? TreeUtility.propertyAccess(value, config.dataDisabledSrc) || false : false;
+//         this.isReadOnly = config.dataReadOnlySrc !== undefined ? TreeUtility.propertyAccess(value, config.dataReadOnlySrc) || false : false;
+//         this.isFavourite = config.dataFavouriteSrc !== undefined ? TreeUtility.propertyAccess(value, config.dataFavouriteSrc) || false : false;
+//         this.dataUniqueFieldValue = TreeUtility.propertyAccess(value, config.dataUniqueFieldSrc) || "";
+//         this.dataVisibleNameValue = TreeUtility.propertyAccess(value, config.dataVisibleNameSrc) || "";
+//         this.dataTooltipValue = config.dataTooltipSrc !== undefined ? TreeUtility.propertyAccess(value, config.dataTooltipSrc) || "" : TreeUtility.propertyAccess(value, config.dataVisibleNameSrc) || "";
+//         this.dataExpandableValue = config.dataExpandableSrc !== undefined ? TreeUtility.propertyAccess(value, config.dataExpandableSrc) || false : false;
+//         this.dataFavouriteValue = config.dataFavouriteSrc !== undefined ? TreeUtility.propertyAccess(value, config.dataFavouriteSrc) || false : false;
+//         this.dataTotalDocsValue = config.dataTotalDocsSrc !== undefined ? TreeUtility.propertyAccess(value, config.dataTotalDocsSrc) || 0 : 0;
 //         this.dataSearchFieldsValues = config.dataSearchFieldsSrc && config.dataSearchFieldsSrc.length > 0 ? config.dataSearchFieldsSrc : [];
 //         this.originalData = value;
 
 //         // fields which are used to manage UI states and functionalities at the runtime
 //         this.isSelected = value.isSelected || false;
+//         this.isActive = value.isActive || false;
+//         this.isInvalid = value.isInvalid || false;
 //         this.isExpanded = value.isExpanded || false;
 //         this.isChildernLoading = value.isChildernLoading || false;
 //         this.levelIndex = parent && parent.levelIndex !== undefined ? parent.levelIndex + 1 : levelIndex;
@@ -175,21 +185,25 @@
 //         yield node;
 //     }
 
-//     insert(dataUniqueFieldValue: string | number, value: any, inheritSelectionValueFromParent: boolean = false, preselectedNodes?: TreeNode[]): boolean {
+//     insert(dataUniqueFieldValue: string | number, value: any, inheritValuesFromParent: boolean = false, preselectedNodes?: TreeNode[]): boolean {
 //         for (let node of this.preOrderTraversal()) {
 //             if (node.dataUniqueFieldValue === dataUniqueFieldValue) {
 //                 let childNode = new TreeNode(value, this.config, node);
 
-//                 if(preselectedNodes && preselectedNodes.length > 0) {
-                    
+//                 if (preselectedNodes && preselectedNodes.length > 0) {
+
 //                     let preSelectedNodeIndex: number = preselectedNodes.findIndex((val) => val.dataUniqueFieldValue === childNode.dataUniqueFieldValue);
-//                     if(preSelectedNodeIndex > -1) {
+//                     if (preSelectedNodeIndex > -1) {
+//                         preselectedNodes.splice(preSelectedNodeIndex, 1);
 //                         childNode.isSelected = true;
 //                     }
 //                 }
 
-//                 if (inheritSelectionValueFromParent) {
+//                 if (inheritValuesFromParent) {
 //                     childNode.isSelected = node.isSelected;
+//                     if (node.isDisabled) {
+//                         childNode.isDisabled = node.isDisabled;
+//                     }
 //                 }
 
 //                 node.children.push(childNode);
@@ -331,6 +345,16 @@
 //         return (this.config.minSelectCount !== undefined && this.config.maxSelectCount !== undefined) && currentSelectedNodesLen >= this.config.minSelectCount && currentSelectedNodesLen <= this.config.maxSelectCount;
 //     }
 
+//     public get isAllSelected(): boolean {
+//         let isAllSelected: boolean = true;
+
+//         TreeUtility.traverseAllNodes(this, "pre-order", (node: TreeNode) => {
+//             isAllSelected = isAllSelected && ((node.isDisabled === false && node.isSelected === true) || (node.isDisabled === true));
+//         }, this.root, (node: TreeNode) => isAllSelected === false );
+
+//         return isAllSelected;
+//     }
+
 //     public insert(dataUniqueFieldValue: string | number, value: any): boolean {
 //         if (this.config.isMultipleLevel === true) {
 //             return super.insert(dataUniqueFieldValue, value, this.config.isHierarchySelectionModificationAllowed, this.preSelectedDataUniqueFieldValues);
@@ -338,7 +362,7 @@
 //         else {
 //             let currentNode: TreeNode | undefined = this.findNodeFromId(dataUniqueFieldValue);
 
-//             if (currentNode && currentNode.levelIndex! === 0) {
+//             if (currentNode && currentNode.levelIndex !== undefined && currentNode.levelIndex === 0) {
 //                 return super.insert(dataUniqueFieldValue, value, this.config.isHierarchySelectionModificationAllowed, this.preSelectedDataUniqueFieldValues);
 //             }
 //             else {
@@ -349,7 +373,7 @@
 
 //     public selectAll(isReset: boolean = false): void {
 //         TreeUtility.traverseAllNodes(this, "pre-order", (node: TreeNode) => {
-//             node.isSelected = !isReset;
+//             !(this.config.isDisabled || node?.isDisabled) && (node.isSelected = !isReset);
 //         });
 //     }
 
@@ -373,11 +397,12 @@
 //     }
 
 //     public nodeSelection(dataUniqueFieldValue: string | number, selectionVal: boolean = true): void {
-//         if (this.config.isDisabled) {
-//             return;
-//         }
 
 //         let currentNode = this.findNodeFromId(dataUniqueFieldValue);
+
+//         if (this.config.isDisabled || currentNode?.isDisabled) {
+//             return;
+//         }
 
 //         if (currentNode) {
 
@@ -388,15 +413,16 @@
 //                 }
 //             }
 
-//             currentNode.isSelected = selectionVal;
+//             !(this.config.isDisabled || currentNode?.isDisabled) && (currentNode.isSelected = selectionVal);
 
 //             if (this.config.isHierarchySelectionModificationAllowed) {
 //                 TreeUtility.traverseAllNodes(this, "pre-order", (node: TreeNode) => {
-//                     node.isSelected = selectionVal;
+//                     console.log("->>", node.dataUniqueFieldValue, node.isDisabled);
+//                     !(this.config.isDisabled || node?.isDisabled) && (node.isSelected = selectionVal);
 //                 }, currentNode);
 
 //                 TreeUtility.traverseAllNodes(this, "post-order", (node: TreeNode) => {
-//                     node.isSelected = node.children.length > 0 ? node.children.some((val: TreeNode) => val.isSelected === false) ? false : true : node.isSelected;
+//                     node.isSelected = node.children.length > 0 ? node.children.some((val: TreeNode) => val.isSelected === false && val.isDisabled === false) ? false : true : node.isSelected;
 //                 });
 //             }
 //         }
@@ -414,6 +440,11 @@
 //         return [];
 //     }
 
+//     public changeNodeDisablility(isDisabled: boolean = true): void {
+//         TreeUtility.traverseAllNodes(this, "pre-order", (node: TreeNode) => {
+//             node.isDisabled = isDisabled;
+//         });
+//     }
 // }
 
 // let data: any[] = [
@@ -439,7 +470,7 @@
 
 // let preselectedData: any[] = [
 //     {
-//         resourceId: "1",
+//         resourceId: "111",
 //         resourceName: "aaa",
 //     },
 //     {
@@ -452,6 +483,12 @@
 //     {
 //         folder_id: "111",
 //         folderName: "11aaa dffrfrf",
+//         folderPath: "myFolder/ff-sdfsd",
+//         // isRecordDisabled: true
+//     },
+//     {
+//         folder_id: "112",
+//         folderName: "112aaa dffrfrf",
 //         folderPath: "myFolder/ff-sdfsd",
 //     }
 // ];
@@ -475,8 +512,8 @@
 //     dataVisibleNameSrc: "folderName",
 //     dataTooltipSrc: "folderPath",
 //     dataSearchFieldsSrc: ["folderName", "folderPath"],
+//     dataDisabledSrc: "isRecordDisabled",
 //     isHierarchySelectionModificationAllowed: false,
-//     isMultipleLevel: false
 // }
 
 // let mySection: DropdownTree = new DropdownTree(mySectionConfig, {
@@ -484,25 +521,26 @@
 //     folderName: "Folders",
 // });
 
-// mySection.preSelectedDataUniqueFieldValues = preselectedData.map((val) => TreeUtility.createExpliciteTreeNode(val, {
-//     dataUniqueFieldSrc: "resourceId",
-//     dataVisibleNameSrc: "resourceName",
-// }, true));
-
-// console.log(mySection.preSelectedDataUniqueFieldValues);
-
+// // mySection.preSelectedDataUniqueFieldValues = preselectedData.map((val) => TreeUtility.createExpliciteTreeNode(val, {
+// //     dataUniqueFieldSrc: "resourceId",
+// //     dataVisibleNameSrc: "resourceName",
+// // }, true));
 
 // data.forEach((val) => mySection.insert("0", val));
-// // data1.forEach((val) => mySection.insert("1", val));
-// // data2.forEach((val) => mySection.insert("2", val));
-
-// // mySection.nodeSelection("1");
-// // data11.forEach((val) => mySection.insert("1", val));
-// // mySection.nodeSelection("111");
+// data1.forEach((val) => mySection.insert("1", val));
+// data2.forEach((val) => mySection.insert("2", val));
 // // console.log(mySection.findNodeFromId("1"));
-// // console.log(mySection.findNodeFromId("2")?.isSelected);
-// // console.log(mySection.findNodeFromId("11")?.isSelected);
-// // console.log(mySection.findNodeFromId("111")?.isSelected);
+// // mySection.nodeSelection("1");
+
+// data11.forEach((val) => mySection.insert("11", val));
+// // mySection.nodeSelection("111");
+// // mySection.changeNodeDisablility();
+// mySection.selectAll();
+// console.log(mySection.isAllSelected);
+
+// console.log(mySection.findNodeFromId("1")?.isSelected);
+// console.log(mySection.findNodeFromId("11")?.isSelected);
+// console.log(mySection.findNodeFromId("111")?.isSelected);
 // // console.log(mySection.getCurrentSelectedNodes().length);
 // // console.log(mySection.validState);
 

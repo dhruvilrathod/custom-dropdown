@@ -32,7 +32,7 @@ export class Tree implements ITree {
         yield node;
     }
 
-    insert(dataUniqueFieldValue: string | number, value: any, inheritSelectionValueFromParent: boolean = false, preselectedNodes?: TreeNode[]): boolean {
+    insert(dataUniqueFieldValue: string | number, value: any, inheritValuesFromParent: boolean = false, preselectedNodes?: TreeNode[]): boolean {
         for (let node of this.preOrderTraversal()) {
             if (node.dataUniqueFieldValue === dataUniqueFieldValue) {
                 let childNode = new TreeNode(value, this.config, node);
@@ -46,8 +46,11 @@ export class Tree implements ITree {
                     }
                 }
 
-                if (inheritSelectionValueFromParent) {
+                if (inheritValuesFromParent) {
                     childNode.isSelected = node.isSelected;
+                    if (node.isDisabled) {
+                        childNode.isDisabled = node.isDisabled;
+                    }
                 }
 
                 node.children.push(childNode);

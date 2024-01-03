@@ -49,6 +49,16 @@ export class DropdownTree extends Tree implements IDropDownTree {
         return (this.config.minSelectCount !== undefined && this.config.maxSelectCount !== undefined) && currentSelectedNodesLen >= this.config.minSelectCount && currentSelectedNodesLen <= this.config.maxSelectCount;
     }
 
+    public get isAllSelected(): boolean {
+        let isAllSelected: boolean = true;
+
+        TreeUtility.traverseAllNodes(this, "pre-order", (node: TreeNode) => {
+            isAllSelected = isAllSelected && ((node.isDisabled === false && node.isSelected === true) || (node.isDisabled === true));
+        }, this.root, (node: TreeNode) => isAllSelected === false);
+
+        return isAllSelected;
+    }
+
     public insert(dataUniqueFieldValue: string | number, value: any): boolean {
         if (this.config.isMultipleLevel === true) {
             return super.insert(dataUniqueFieldValue, value, this.config.isHierarchySelectionModificationAllowed, this.preSelectedDataUniqueFieldValues);
@@ -56,7 +66,7 @@ export class DropdownTree extends Tree implements IDropDownTree {
         else {
             let currentNode: TreeNode | undefined = this.findNodeFromId(dataUniqueFieldValue);
 
-            if (currentNode && currentNode.levelIndex! === 0) {
+            if (currentNode && currentNode.levelIndex !== undefined && currentNode.levelIndex === 0) {
                 return super.insert(dataUniqueFieldValue, value, this.config.isHierarchySelectionModificationAllowed, this.preSelectedDataUniqueFieldValues);
             }
             else {
@@ -67,7 +77,7 @@ export class DropdownTree extends Tree implements IDropDownTree {
 
     public selectAll(isReset: boolean = false): void {
         TreeUtility.traverseAllNodes(this, "pre-order", (node: TreeNode) => {
-            node.isSelected = !isReset;
+            !(this.config.isDisabled || node?.isDisabled) && (node.isSelected = !isReset);
         });
     }
 
@@ -91,11 +101,12 @@ export class DropdownTree extends Tree implements IDropDownTree {
     }
 
     public nodeSelection(dataUniqueFieldValue: string | number, selectionVal: boolean = true): void {
-        if (this.config.isDisabled) {
-            return;
-        }
 
         let currentNode = this.findNodeFromId(dataUniqueFieldValue);
+
+        if (this.config.isDisabled || currentNode?.isDisabled) {
+            return;
+        }
 
         if (currentNode) {
 
@@ -106,15 +117,15 @@ export class DropdownTree extends Tree implements IDropDownTree {
                 }
             }
 
-            currentNode.isSelected = selectionVal;
+            !(this.config.isDisabled || currentNode?.isDisabled) && (currentNode.isSelected = selectionVal);
 
             if (this.config.isHierarchySelectionModificationAllowed) {
                 TreeUtility.traverseAllNodes(this, "pre-order", (node: TreeNode) => {
-                    node.isSelected = selectionVal;
+                    !(this.config.isDisabled || node?.isDisabled) && (node.isSelected = selectionVal);
                 }, currentNode);
 
                 TreeUtility.traverseAllNodes(this, "post-order", (node: TreeNode) => {
-                    node.isSelected = node.children.length > 0 ? node.children.some((val: TreeNode) => val.isSelected === false) ? false : true : node.isSelected;
+                    node.isSelected = node.children.length > 0 ? node.children.some((val: TreeNode) => val.isSelected === false && val.isDisabled === false) ? false : true : node.isSelected;
                 });
             }
         }
@@ -126,10 +137,16 @@ export class DropdownTree extends Tree implements IDropDownTree {
                 return super.findNodes(searchValue);
             }
             if (this.config.isAsynchronousSearchAllowed) {
-                return super.findNodes(searchValue); // write for aync logic
+                return super.findNodes(searchValue); // TODO: write for aync logic
             }
         }
         return [];
+    }
+
+    public changeNodeDisablility(isDisabled: boolean = true): void {
+        TreeUtility.traverseAllNodes(this, "pre-order", (node: TreeNode) => {
+            node.isDisabled = isDisabled;
+        });
     }
 
 }
