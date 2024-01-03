@@ -37,6 +37,7 @@ export interface ITreeNode {
     isCurrentNodeActive: boolean;
     isFavourite: boolean;
     isInvalid: boolean;
+    isCustom?: boolean;
     isDisabled: boolean;
     isReadOnly: boolean;
     isExpanded: boolean;

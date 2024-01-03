@@ -81,6 +81,11 @@ export class DropdownTree extends Tree implements IDropdownTree {
     }
 
     public selectAll(isReset: boolean = false): void {
+
+        if(this.config.isSectionSelectionAllowed) {
+            this.root.isSelected = !isReset;
+        }
+
         TreeUtility.traverseAllNodes(this, "pre-order", (node: TreeNode) => {
             !(this.config.isDisabled || node?.isDisabled) && (node.isSelected = !isReset);
         });
@@ -90,20 +95,30 @@ export class DropdownTree extends Tree implements IDropdownTree {
         let selectedNodes: TreeNode[] = [];
 
         TreeUtility.traverseAllNodes(this, "pre-order", (node: TreeNode) => {
-            if (!this.config.isHierarchySelectionModificationAllowed && node.levelIndex !== undefined && node.levelIndex > 0 && node.isSelected === true) {
 
+            if (!this.config.isHierarchySelectionModificationAllowed && node.levelIndex !== undefined && node.levelIndex > 0 && node.isSelected === true) {
                 selectedNodes.push(node);
             }
-            else if (this.config.isHierarchySelectionModificationAllowed && node.levelIndex !== undefined && node.levelIndex > 0 && node.children.length > 0 && node.isAllChildrenSelected === true && node.isSelected === true) {
-                selectedNodes.push(node);
+
+            else if (this.config.isHierarchySelectionModificationAllowed && node.levelIndex !== undefined && node.levelIndex > 0) {
+                
+                if (node.children.length > 0 && node.isAllChildrenSelected === true && node.isSelected === true) {
+                    node.children.forEach((val: TreeNode) => {
+                        let deleteIndex = selectedNodes.indexOf(val);
+                        deleteIndex > -1 && selectedNodes.splice(deleteIndex, 1);
+                    });
+                    selectedNodes.push(node);
+                }
+                
+                else if (node.children.length === 0 && node.isSelected === true && node.parent && node.parent.isAllChildrenSelected === false) {
+                    selectedNodes.push(node);
+                }
             }
-            else if (this.config.isHierarchySelectionModificationAllowed && node.levelIndex !== undefined && node.levelIndex > 0 && node.children.length === 0 && node.isSelected === true) {
-                selectedNodes.push(node);
-            }
+
             else if (this.config.isHierarchySelectionModificationAllowed && node.levelIndex !== undefined && node.levelIndex === 0 && node.isAllChildrenSelected === true) {
                 selectedNodes.push(...this.root.children);
             }
-        }, undefined, (node: TreeNode) => this.config.isHierarchySelectionModificationAllowed === true && node.isAllChildrenSelected === true);
+        }, undefined, (node: TreeNode) => this.config.isHierarchySelectionModificationAllowed === true && node.isAllChildrenSelected === true && node.parent !== undefined && node.parent.isAllChildrenSelected === true);
 
         return selectedNodes;
     }

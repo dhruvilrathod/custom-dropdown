@@ -47,7 +47,6 @@ export class CustomSelectComponent implements OnInit, OnDestroy {
 	public openState: boolean = true;
 	public invalidState: boolean = false;
 	public isLoading: boolean = false;
-	public isAllSelected: boolean = false;
 	public isQueryFocused: boolean = false;
 	public searchLoading: boolean = false;
 
@@ -74,6 +73,9 @@ export class CustomSelectComponent implements OnInit, OnDestroy {
 		this.popoverInstance && this.popoverInstance.close();
 	}
 
+	get isAllSelected(): boolean {
+		return this.primaryData.reduce<boolean>((acc: boolean, val: IDropdownTree) => val.isAllSelected && acc, true);
+	}
 
 	set primaryData(value: IDropdownTree[]) {
 		console.log(value);
@@ -120,7 +122,14 @@ export class CustomSelectComponent implements OnInit, OnDestroy {
 	}
 
 	public chipRemovalTrigger(chip: TreeNode) {
+		// for regular chips added from the dropdown
 		chip.isSelected = false;
+
+		// if custom input is allowed
+		if (this.sectionConfigData.isCustomInputAllowed && chip.isCustom) {
+			let deleteIndex = this.customchipsData.indexOf(chip);
+			deleteIndex > -1 && this.customchipsData.splice(deleteIndex, 1);
+		}
 		this._updateChipData();
 	}
 
@@ -196,9 +205,12 @@ export class CustomSelectComponent implements OnInit, OnDestroy {
 	}
 
 	public addCustomChip(event: KeyboardEvent): void {
+		if (this.sectionConfigData.isCustomInputAllowed === false || this.chipData.length === this.sectionConfigData.maxSelectCount) {
+			return;
+		}
 
 		let name = this.queryBox.nativeElement.value;
-		if (this.sectionConfigData.isCustomInputAllowed === false || name === '' || name === undefined || name === null) {
+		if (name === '' || name === undefined || name === null) {
 			return;
 		}
 		else {
@@ -210,6 +222,7 @@ export class CustomSelectComponent implements OnInit, OnDestroy {
 			let nodeOriginalData = {};
 			TreeUtility.propertyAdd(nodeOriginalData, this.sectionConfigData.dataUniqueFieldSrc, new Date().getTime());
 			TreeUtility.propertyAdd(nodeOriginalData, this.sectionConfigData.dataVisibleNameSrc, name);
+			TreeUtility.propertyAdd(nodeOriginalData, "isCustom", true);
 			this.sectionConfigData.dataTooltipSrc && TreeUtility.propertyAdd(nodeOriginalData, this.sectionConfigData.dataTooltipSrc, name);
 
 			let customChip = TreeUtility.createExpliciteDropdownTreeNode(nodeOriginalData, this.sectionConfigData, true);
@@ -229,18 +242,30 @@ export class CustomSelectComponent implements OnInit, OnDestroy {
 	}
 
 	public selectAllOptions(isReset?: boolean) {
+		this.chipData = [];
 
+		// select all regular dropdown nodes
 		this.primaryData.forEach((val: IDropdownTree) => {
 			val.selectAll(isReset);
 		});
 
+		// empty custom chips if configuration available
+		if (isReset && this.sectionConfigData.isCustomInputAllowed) {
+			this.customchipsData = [];
+		}
+
 		this._updateChipData();
 
-		(isReset || !this.isAllSelected) && this.onReset.emit();
 	}
 
-	public optionSelectionTrigger(selectionVal: boolean, nodeRef: TreeNode, treeRef: IDropdownTree): void {
-		console.log(treeRef, nodeRef);
+	public optionSelectionTrigger(e: Event, selectionVal: boolean, nodeRef: TreeNode, treeRef: IDropdownTree): void {
+
+		if (selectionVal && this.chipData.length === this.sectionConfigData.maxSelectCount) {
+			(e.target as HTMLInputElement).checked = false;
+			e.stopPropagation();
+			return;
+		}
+
 		treeRef.nodeSelection(nodeRef.dataUniqueFieldValue, selectionVal);
 		this._updateChipData();
 	}
@@ -282,11 +307,54 @@ export class CustomSelectComponent implements OnInit, OnDestroy {
 
 	private _updateChipData(): void {
 		this.chipData = [];
+
+		// adding regular selected chips from dropdown
 		this.primaryData.forEach((val: IDropdownTree) => {
-			console.log(val.getCurrentSelectedNodes());
-			
+			console.log(val.getCurrentSelectedNodes().length);
 			this.chipData.push(...val.getCurrentSelectedNodes());
 		});
+
+		// adding custom added chips if custom input is allowed
+		if (this.sectionConfigData.isCustomInputAllowed) {
+			this.chipData.push(...this.customchipsData);
+		}
+
+		this._sendLatestDropdownSelection();
 	}
 
+	private _sendLatestDropdownSelection(): void {
+		let selectionNodes: TreeNode[] = [];
+		for (let i = 0, chipDataLen = this.chipData.length; i < chipDataLen; i++) {
+			!this.chipData[i].isCustom && selectionNodes.push(this.chipData[i]);
+			this.chipData[i].isCustom && selectionNodes.push(this.chipData[i]);
+		}
+		this.invalidState = this._validateChipDataLength(selectionNodes);
+		this.selectionChange.emit(selectionNodes);
+		if (this.sectionConfigData.isSingularInput && selectionNodes.length === 1) {
+			this.popoverInstance.close();
+		}
+		if (this.sectionConfigData.maxSelectCount !== undefined && this.sectionConfigData.maxSelectCount > 0 && selectionNodes.length === this.sectionConfigData.maxSelectCount) {
+			this.popoverInstance.close();
+		}
+		if (this.chipData && this.chipData.length && this.chipData.length > 0) {
+			let invalidChipFound = this.chipData.reduce<boolean>((acc, current) => { return (acc || (current.isInvalid ? current.isInvalid : false)) }, false);
+
+			if (invalidChipFound) {
+				this.invalidState = true;
+			}
+			else {
+				this.invalidState = false;
+			}
+		}
+	}
+
+	private _validateChipDataLength(data: any[]): boolean {
+		if (this.sectionConfigData.maxSelectCount !== undefined && this.sectionConfigData.minSelectCount !== undefined && (data.length < this.sectionConfigData.minSelectCount || (this.sectionConfigData.maxSelectCount > 0 && data.length > this.sectionConfigData.maxSelectCount))) {
+			this.errorMessage.emit({ message: "Invalid length" });
+			return false;
+		}
+		else {
+			return true;
+		}
+	}
 }

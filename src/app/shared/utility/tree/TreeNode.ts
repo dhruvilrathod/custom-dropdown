@@ -10,6 +10,7 @@ export class TreeNode implements ITreeNode {
     isCurrentNodeActive: boolean;
     isFavourite: boolean;
     isInvalid: boolean;
+    isCustom?: boolean;
     isChildernLoading: boolean;
     levelIndex: number;
     dataUniqueFieldValue: string | number;
@@ -47,6 +48,7 @@ export class TreeNode implements ITreeNode {
         this.isSelected = value.isSelected || false;
         this.isCurrentNodeActive = value.isCurrentNodeActive || false;
         this.isInvalid = value.isInvalid || false;
+        this.isCustom = value.isCustom || false;
         this.isExpanded = value.isExpanded || false;
         this.isChildernLoading = value.isChildernLoading || false;
         this.levelIndex = parent && parent.levelIndex !== undefined ? parent.levelIndex + 1 : levelIndex;

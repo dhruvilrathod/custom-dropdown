@@ -69,8 +69,13 @@
                     class="action-button-container"
                     >
                     <div class="buttons-container">
-                        <button *ngIf="sectionConfigData.isSelectAllAvailable && !sectionConfigData.isSingularInput && !sectionConfigData.isReadonly" (click)="selectAllOptions()">
-                            <span *ngIf="!isAllSelected && !sectionConfigData.isSingularInput">{{ 'select-all' }}</span>
+                        <button 
+                            *ngIf="
+                                (sectionConfigData.isSelectAllAvailable && !sectionConfigData.isSingularInput)
+                                && (!sectionConfigData.isReadonly && sectionConfigData.maxSelectCount !== undefined && sectionConfigData.maxSelectCount < 0)
+                                "
+                            (click)="selectAllOptions(isAllSelected ? true : false)">
+                            <span *ngIf="!isAllSelected">{{ 'select-all' }}</span>
                             <span *ngIf="isAllSelected">{{ 'unselect-all' }}</span>
                         </button>
                     </div>
@@ -92,9 +97,10 @@
                         <div *ngIf="s.root.dataVisibleNameValue" class="section-details-container">
         
                             <input
-                                *ngIf="s.config.isSectionSelectionAllowed === true"
+                                *ngIf="s.config.isSectionSelectionAllowed === true && sectionConfigData.maxSelectCount !== undefined && sectionConfigData.maxSelectCount < 0"
                                 type="checkbox" 
-                                (change)="optionSelectionTrigger($any($event.target).checked, s.root, s)"
+                                [checked]="s.root.isSelected"
+                                (change)="optionSelectionTrigger($event, $any($event.target).checked, s.root, s)"
                                 [id]="s.root.dataUniqueFieldValue">
                 
                             <label 
@@ -195,7 +201,7 @@
                         [checked]="op.isSelected"
                         [indeterminate]="op.isPartiallySelected && !op.isSelected"
                         [id]="op.dataUniqueFieldValue"
-                        (change)="optionSelectionTrigger($any($event.target).checked, op, sectionData)">
+                        (change)="optionSelectionTrigger($event, $any($event.target).checked, op, sectionData)">
                 </div>
     
                 <div 

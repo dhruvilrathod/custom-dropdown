@@ -49,10 +49,10 @@ export class AppComponent implements OnInit {
     isRequired: true,
     isDisabled: this.projectValidationXHR,
     minSelectCount: 1,
-    maxSelectCount: 23,
+    maxSelectCount: 3,
     isSingularInput: false,
     isReadonly: false,
-    isCustomInputAllowed: false,
+    isCustomInputAllowed: true,
     isSearchAllowed: true,
     isAsynchronousSearchAllowed: true,
     isClientSideSearchAllowed: true,
@@ -130,7 +130,7 @@ export class AppComponent implements OnInit {
         let treeSection1: IDropdownTree = TreeUtility.createExpliciteDropdownTree(sectionHeader, this.sectionDataToPass, "1");
         value.forEach((element: any) => {
           treeSection1.insert("1", element);
-        }); 
+        });
         this.dataToPass = [treeSection1];
 
       },

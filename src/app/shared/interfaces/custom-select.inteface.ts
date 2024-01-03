@@ -28,6 +28,7 @@ export interface IDropdownTree extends ITree {
     config: IDropDownTreeConfig;
     validState: boolean;
     insert(dataUniqueFieldValue: string | number, value: any): boolean;
+    isAllSelected: boolean;
     selectAll(isReset?: boolean): void;
     getCurrentSelectedNodes(): Array<TreeNode>;
     findNodes(searchValue: string): TreeNode[];
