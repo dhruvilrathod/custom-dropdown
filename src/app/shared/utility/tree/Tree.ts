@@ -89,6 +89,10 @@ export class Tree implements ITree {
 
         for (let node of this.preOrderTraversal()) {
             let dataSearchFieldsValuesLen = node.dataSearchFieldsValues.length;
+            if (dataSearchFieldsValuesLen === 0) {
+                node.dataSearchFieldsValues.push(this.config.dataVisibleNameSrc);
+                dataSearchFieldsValuesLen++;
+            }
             if (dataSearchFieldsValuesLen > 0 && node.levelIndex !== undefined && node.levelIndex > 0) {
                 for (let i = 0; i < dataSearchFieldsValuesLen; i++) {
 

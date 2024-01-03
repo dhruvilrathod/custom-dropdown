@@ -1,0 +1,82 @@
+ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    list-style-type: none;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    transition: all 200ms;
+    
+    li.chip-container {
+        display: inline-block;
+        border: 1px solid #ddd;
+        border-radius: 15px;
+        background-color: #f1f1f1;
+        cursor: pointer;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        transition: inherit;
+
+        &.chip-invalid {
+            outline: none;
+            border: 1px solid rgba(236, 82, 82, 0.8);
+    
+            &.active-chip {
+                outline: none;
+                border: 1px solid rgba(236, 82, 82, 0.8);
+                box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(236, 82, 82, 0.6);    
+            }
+        }
+
+        &.active-chip {
+            outline: none;
+            border: 1px solid rgba(82, 168, 236, .8);
+            box-shadow: inset 0 1px 1px rgba(0, 0, 0, .075), 0 0 8px rgba(82, 168, 236, .6);    
+        }
+
+        .left-section {
+            padding: 4px;
+            background-color: #ccc;
+            border-radius: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 14px;
+            width: 14px;
+            font-size: 12px;
+            overflow: hidden;
+            transition: inherit;
+            aspect-ratio: 1;
+        }
+
+        .main-section {
+            margin: 0 8px;
+            max-width: 200px;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .right-section {
+            padding: 2px;
+            background-color: #ddd;
+            border-radius: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 14px;
+            width: 14px;
+            font-size: 12px;
+            margin: 2px 2px 2px 0;
+            overflow: hidden;
+            transition: inherit;
+
+            &:hover {
+                background-color: #ccc;
+            }
+        }
+    }
+}

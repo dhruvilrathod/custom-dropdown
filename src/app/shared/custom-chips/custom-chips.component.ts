@@ -48,15 +48,15 @@ export class CustomChipsComponent implements OnInit, AfterViewInit, OnDestroy {
 	public activateChip(chip: TreeNode) {
 
 		for (let i = 0, chipDataLen = this.chipData.length; i < chipDataLen; i++) {
-			if (this.chipData[i].isActive) {
-				this.chipData[i].isActive = false;
+			if (this.chipData[i].isCurrentNodeActive) {
+				this.chipData[i].isCurrentNodeActive = false;
 			}
 			if (this.chipData[i].dataUniqueFieldValue === chip.dataUniqueFieldValue) {
 				this._currentChipActiveIndex = i;
 			}
 		}
 
-		chip.isActive = true;
+		chip.isCurrentNodeActive = true;
 		this._isAnyChipActive = true;
 		this.onChipClick.emit(chip);
 	}
@@ -69,8 +69,8 @@ export class CustomChipsComponent implements OnInit, AfterViewInit, OnDestroy {
 
 	public resetActiveChip(): void {
 		for (let i = 0, chipDataLen = this.chipData.length; i < chipDataLen; i++) {
-			if (this.chipData[i].isActive) {
-				this.chipData[i].isActive = false;
+			if (this.chipData[i].isCurrentNodeActive) {
+				this.chipData[i].isCurrentNodeActive = false;
 			}
 		}
 		this._currentChipActiveIndex = -1;
@@ -89,14 +89,14 @@ export class CustomChipsComponent implements OnInit, AfterViewInit, OnDestroy {
 			if (this.chipData.length > 0 && this._isAnyChipActive && this._currentChipActiveIndex > -1) {
 				if (((e.code === "ArrowLeft" && this._currentChipActiveIndex > 0) || (e.code === "ArrowRight" && this._currentChipActiveIndex < this.chipData.length - 1))) {
 					for (let i = 0, chipDataLen = this.chipData.length; i < chipDataLen; i++) {
-						if (this.chipData[i].isActive) {
-							this.chipData[i].isActive = false;
+						if (this.chipData[i].isCurrentNodeActive) {
+							this.chipData[i].isCurrentNodeActive = false;
 							if (e.code === "ArrowLeft") {
-								this.chipData[i - 1].isActive = true;
+								this.chipData[i - 1].isCurrentNodeActive = true;
 								this._currentChipActiveIndex = i - 1;
 							}
 							else if (e.code === "ArrowRight") {
-								this.chipData[i + 1].isActive = true;
+								this.chipData[i + 1].isCurrentNodeActive = true;
 								this._currentChipActiveIndex = i + 1;
 							}
 							break;
@@ -109,19 +109,19 @@ export class CustomChipsComponent implements OnInit, AfterViewInit, OnDestroy {
 				else if (e.code === "Backspace" || e.code === "Delete") {
 					console.log(this.chipData, this._currentChipActiveIndex);
 
-					this.chipData[this._currentChipActiveIndex].isActive = false;
+					this.chipData[this._currentChipActiveIndex].isCurrentNodeActive = false;
 					this.removeChip(this.chipData[this._currentChipActiveIndex], false);
 
 					if (this._currentChipActiveIndex - 1 >= 0) {
 						console.log('if');
 
 						this._currentChipActiveIndex--;
-						this.chipData[this._currentChipActiveIndex].isActive = true;
+						this.chipData[this._currentChipActiveIndex].isCurrentNodeActive = true;
 					}
 					else if (this.chipData[this._currentChipActiveIndex] && this._currentChipActiveIndex + 1 <= this.chipData.length) {
 						console.log('esle', this.chipData[this._currentChipActiveIndex], this._currentChipActiveIndex);
 
-						this.chipData[this._currentChipActiveIndex].isActive = true;
+						this.chipData[this._currentChipActiveIndex].isCurrentNodeActive = true;
 					}
 				}
 			}

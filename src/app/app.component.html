@@ -1,4 +1,4 @@
-<!-- <br>
+<br>
 <button (click)="isVisible = !isVisible">close</button>
 <br>
 <div>
@@ -8,7 +8,7 @@
 </div>
 <br>
 <div *ngIf="isVisible">
-    <app-multi-object-select 
+    <!-- <app-multi-object-select 
         [primaryData]="dataToPass"
         [globalLoading]="loading"
         [sectionConfigData]="sectionDataToPass"
@@ -50,9 +50,29 @@
         
         #myDropdown
         >
-    </app-multi-object-select>
-</div> -->
+    </app-multi-object-select> -->
 
-<app-custom-select></app-custom-select>
+    <app-custom-select
+        [primaryData]="dataToPass"
+        [globalLoading]="loading"
+        [sectionConfigData]="sectionDataToPass"
+        [preSelectedChips]="preSelectedChips"
+        [externalValidation]="isSelectionValid"
+
+        (errorMessage)="errorOccured($event)"
+        (selectionChange)="finalDataReceived($event)"
+        (dataRequester)="loadChildren($event)"
+        (onChipAdd)="onChipAdd($event)"
+        (onChipRemove)="onChipRemove($event)"
+        (onChipClick)="onChipClick($event)"
+        (onQuerySeach)="searchValue($event)"
+        (onReset)="onReset($event)"
+        (onSelectAll)="onSelectAll($event)"
+        (initialLoad)="makeAPICall()"
+        (onChipContextMenu)="onChipContextMenu($event)"
+        #myDropdown
+    >
+    </app-custom-select>
+</div>
 
 <!-- <app-sample-popover></app-sample-popover> -->

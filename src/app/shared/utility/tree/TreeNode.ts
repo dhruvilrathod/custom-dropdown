@@ -7,7 +7,7 @@ export class TreeNode implements ITreeNode {
     isDisabled: boolean;
     isReadOnly: boolean;
     isExpanded: boolean;
-    isActive: boolean;
+    isCurrentNodeActive: boolean;
     isFavourite: boolean;
     isInvalid: boolean;
     isChildernLoading: boolean;
@@ -45,7 +45,7 @@ export class TreeNode implements ITreeNode {
 
         // fields which are used to manage UI states and functionalities at the runtime
         this.isSelected = value.isSelected || false;
-        this.isActive = value.isActive || false;
+        this.isCurrentNodeActive = value.isCurrentNodeActive || false;
         this.isInvalid = value.isInvalid || false;
         this.isExpanded = value.isExpanded || false;
         this.isChildernLoading = value.isChildernLoading || false;

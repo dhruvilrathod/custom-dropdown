@@ -34,7 +34,7 @@ export interface ITree {
 
 export interface ITreeNode {
     isSelected: boolean;
-    isActive: boolean;
+    isCurrentNodeActive: boolean;
     isFavourite: boolean;
     isInvalid: boolean;
     isDisabled: boolean;

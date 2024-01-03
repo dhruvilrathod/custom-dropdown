@@ -42,6 +42,8 @@
 //     isResetOptionVisible?: boolean; // UI
 //     isSelectAllAvailable?: boolean; // UI
 //     isMultipleLevel?: boolean; // done
+//     isSectionSelectionAllowed?: boolean;
+//     isSectionTitleVisible?: boolean;
 //     isAsynchronouslyExpandable?: boolean;
 //     isHierarchySelectionModificationAllowed?: boolean; // done
 //     minSelectCount?: number; // done
@@ -293,9 +295,13 @@
 //         }
 //     }
 
-//     static createExpliciteTreeNode(originalData: any, config: IDropDownTreeConfig, defaultSelectionValue: boolean = false): TreeNode {
-//         originalData.isSelected = true;
+//     static createExpliciteDropdownTreeNode(originalData: any, config: IDropDownTreeConfig, defaultSelectionValue: boolean = false): TreeNode {
+//         originalData.isSelected = defaultSelectionValue;
 //         return new TreeNode(originalData, config);
+//     }
+
+//     static createExpliciteDropdownTree(originalData: any, config: IDropDownTreeConfig, treeId: string | number): DropdownTree {
+//         return new DropdownTree(config, originalData);
 //     }
 // }
 
@@ -320,6 +326,8 @@
 //         this.config.isResetOptionVisible = config.isResetOptionVisible !== undefined ? config.isResetOptionVisible : false;
 //         this.config.isSelectAllAvailable = config.isSelectAllAvailable !== undefined ? config.isSelectAllAvailable : false;
 //         this.config.isMultipleLevel = config.isMultipleLevel !== undefined ? config.isMultipleLevel : true;
+//         this.config.isSectionSelectionAllowed = config.isSectionSelectionAllowed !== undefined ? config.isSectionSelectionAllowed : false;
+//         this.config.isSectionTitleVisible = config.isSectionTitleVisible !== undefined ? config.isSectionTitleVisible : true;
 //         this.config.isAsynchronouslyExpandable = config.isAsynchronouslyExpandable !== undefined ? config.isAsynchronouslyExpandable : false;
 //         this.config.isHierarchySelectionModificationAllowed = config.isHierarchySelectionModificationAllowed !== undefined ? config.isHierarchySelectionModificationAllowed : false;
 //         this.config.minSelectCount = config.minSelectCount !== undefined ? config.minSelectCount : 1;
@@ -350,7 +358,7 @@
 
 //         TreeUtility.traverseAllNodes(this, "pre-order", (node: TreeNode) => {
 //             isAllSelected = isAllSelected && ((node.isDisabled === false && node.isSelected === true) || (node.isDisabled === true));
-//         }, this.root, (node: TreeNode) => isAllSelected === false );
+//         }, this.root, (node: TreeNode) => isAllSelected === false);
 
 //         return isAllSelected;
 //     }
@@ -381,15 +389,20 @@
 //         let selectedNodes: TreeNode[] = [];
 
 //         TreeUtility.traverseAllNodes(this, "pre-order", (node: TreeNode) => {
+//             console.log(node.levelIndex !== undefined && node.levelIndex > 0, node.isAllChildrenSelected === true);
 //             if (!this.config.isHierarchySelectionModificationAllowed && node.levelIndex !== undefined && node.levelIndex > 0 && node.isSelected === true) {
+                
 //                 selectedNodes.push(node);
 //             }
-//             else if (this.config.isHierarchySelectionModificationAllowed && node.levelIndex !== undefined && node.levelIndex > 0 && node.isAllChildrenSelected === true) {
-
+//             else if (this.config.isHierarchySelectionModificationAllowed && node.levelIndex !== undefined && node.levelIndex > 0 && node.children.length > 0 && node.isAllChildrenSelected === true && node.isSelected === true) {                
+//                 selectedNodes.push(node);
+//             }
+//             else if (this.config.isHierarchySelectionModificationAllowed && node.levelIndex !== undefined && node.levelIndex > 0 && node.children.length === 0 && node.isSelected === true) {                
 //                 selectedNodes.push(node);
 //             }
 //             else if (this.config.isHierarchySelectionModificationAllowed && node.levelIndex !== undefined && node.levelIndex === 0 && node.isAllChildrenSelected === true) {
 //                 selectedNodes.push(...this.root.children);
+
 //             }
 //         }, undefined, (node: TreeNode) => this.config.isHierarchySelectionModificationAllowed === true && node.isAllChildrenSelected === true);
 
@@ -513,7 +526,7 @@
 //     dataTooltipSrc: "folderPath",
 //     dataSearchFieldsSrc: ["folderName", "folderPath"],
 //     dataDisabledSrc: "isRecordDisabled",
-//     isHierarchySelectionModificationAllowed: false,
+//     isHierarchySelectionModificationAllowed: true,
 // }
 
 // let mySection: DropdownTree = new DropdownTree(mySectionConfig, {
@@ -533,15 +546,15 @@
 // // mySection.nodeSelection("1");
 
 // data11.forEach((val) => mySection.insert("11", val));
-// // mySection.nodeSelection("111");
+// mySection.nodeSelection("111");
 // // mySection.changeNodeDisablility();
-// mySection.selectAll();
+// // mySection.selectAll();
 // console.log(mySection.isAllSelected);
 
 // console.log(mySection.findNodeFromId("1")?.isSelected);
 // console.log(mySection.findNodeFromId("11")?.isSelected);
 // console.log(mySection.findNodeFromId("111")?.isSelected);
-// // console.log(mySection.getCurrentSelectedNodes().length);
+// console.log(mySection.getCurrentSelectedNodes().length);
 // // console.log(mySection.validState);
 
 // // console.log(mySection.getCurrentSelectedNodes()[0].dataUniqueFieldValue);

@@ -1,9 +1,9 @@
-import { IDropDownTree, IDropDownTreeConfig } from "../../interfaces/custom-select.inteface";
+import { IDropdownTree, IDropDownTreeConfig } from "../../interfaces/custom-select.inteface";
 import { Tree } from "./Tree";
 import { TreeNode } from "./TreeNode";
 import { TreeUtility } from "./TreeUtility";
 
-export class DropdownTree extends Tree implements IDropDownTree {
+export class DropdownTree extends Tree implements IDropdownTree {
 
     config: IDropDownTreeConfig;
     preSelectedDataUniqueFieldValues: TreeNode[];
@@ -24,10 +24,15 @@ export class DropdownTree extends Tree implements IDropDownTree {
         this.config.isResetOptionVisible = config.isResetOptionVisible !== undefined ? config.isResetOptionVisible : false;
         this.config.isSelectAllAvailable = config.isSelectAllAvailable !== undefined ? config.isSelectAllAvailable : false;
         this.config.isMultipleLevel = config.isMultipleLevel !== undefined ? config.isMultipleLevel : true;
+        this.config.isSectionSelectionAllowed = config.isSectionSelectionAllowed !== undefined ? config.isSectionSelectionAllowed : false;
+        this.config.isSectionTitleVisible = config.isSectionTitleVisible !== undefined ? config.isSectionTitleVisible : true;
         this.config.isAsynchronouslyExpandable = config.isAsynchronouslyExpandable !== undefined ? config.isAsynchronouslyExpandable : false;
         this.config.isHierarchySelectionModificationAllowed = config.isHierarchySelectionModificationAllowed !== undefined ? config.isHierarchySelectionModificationAllowed : false;
         this.config.minSelectCount = config.minSelectCount !== undefined ? config.minSelectCount : 1;
         this.config.maxSelectCount = config.maxSelectCount !== undefined ? config.maxSelectCount : -1;
+        this.config.placeholderKey = config.placeholderKey !== undefined ? config.placeholderKey : "";
+        this.config.noDataMessageKey = config.noDataMessageKey !== undefined ? config.noDataMessageKey : "";
+        this.config.invalidMessageKey = config.invalidMessageKey !== undefined ? config.invalidMessageKey : "";
 
         this.preSelectedDataUniqueFieldValues = preSelectedDataUniqueFieldValues || [];
         if (this.config.maxSelectCount > -1 && this.config.maxSelectCount < this.config.minSelectCount) {
@@ -86,10 +91,13 @@ export class DropdownTree extends Tree implements IDropDownTree {
 
         TreeUtility.traverseAllNodes(this, "pre-order", (node: TreeNode) => {
             if (!this.config.isHierarchySelectionModificationAllowed && node.levelIndex !== undefined && node.levelIndex > 0 && node.isSelected === true) {
+
                 selectedNodes.push(node);
             }
-            else if (this.config.isHierarchySelectionModificationAllowed && node.levelIndex !== undefined && node.levelIndex > 0 && node.isAllChildrenSelected === true) {
-
+            else if (this.config.isHierarchySelectionModificationAllowed && node.levelIndex !== undefined && node.levelIndex > 0 && node.children.length > 0 && node.isAllChildrenSelected === true && node.isSelected === true) {
+                selectedNodes.push(node);
+            }
+            else if (this.config.isHierarchySelectionModificationAllowed && node.levelIndex !== undefined && node.levelIndex > 0 && node.children.length === 0 && node.isSelected === true) {
                 selectedNodes.push(node);
             }
             else if (this.config.isHierarchySelectionModificationAllowed && node.levelIndex !== undefined && node.levelIndex === 0 && node.isAllChildrenSelected === true) {
@@ -135,9 +143,6 @@ export class DropdownTree extends Tree implements IDropDownTree {
         if (this.config.isSearchAllowed) {
             if (this.config.isClientSideSearchAllowed) {
                 return super.findNodes(searchValue);
-            }
-            if (this.config.isAsynchronousSearchAllowed) {
-                return super.findNodes(searchValue); // TODO: write for aync logic
             }
         }
         return [];

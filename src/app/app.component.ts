@@ -4,6 +4,9 @@ import { DataRequester, SelectionChip } from './multi-object-select/interfaces/m
 import { MultiObjectSelectionComponent } from './multi-object-select/multi-object-select.component';
 import { DataTooltipSrcFields, DataUniqueSrcFields, DataVisibleNameSrcFields, DataExpandableSrcFields, DataChildrenSrcFields, DataFavouriteSrcFields, DataTotalDocsSrcFields, DataPathIdsSrcFields, MultiObjectSelectionTypeId, DataDisabledSrcFields } from './multi-object-select/enums/multi-object-selection.enum';
 import { Subscription } from 'rxjs';
+import { IExternalDataRequest, IDropDownTreeConfig, IDropdownTree } from './shared/interfaces/custom-select.inteface';
+import { TreeUtility } from './shared/utility/tree/TreeUtility';
+import { TreeNode } from './shared/utility/tree/TreeNode';
 
 @Component({
   selector: 'app-root',
@@ -20,7 +23,7 @@ export class AppComponent implements OnInit {
 
   public loading: boolean = false;
 
-  public dataToPass!: any;
+  public dataToPass!: IDropdownTree[];
 
   public preSelectedChips: any[] = [];
 
@@ -28,21 +31,42 @@ export class AppComponent implements OnInit {
 
   public isSelectionValid: boolean = true;
 
-  public sectionDataToPass: any = {
-    dataTooltipSrc: DataTooltipSrcFields.FOLDER_SELECTION.split("/"),
-    dataUniqueFieldSrc: DataUniqueSrcFields.FOLDER_SELECTION.split("/"),
-    dataVisibleNameSrc: DataVisibleNameSrcFields.FOLDER_SELECTION.split("/"),
-    dataExpandableSrc: DataExpandableSrcFields.FOLDER_SELECTION.split("/"),
-    dataChildrenSrc: DataChildrenSrcFields.FOLDER_SELECTION.split("/"),
-    dataFavouriteSrc: DataFavouriteSrcFields.FOLDER_SELECTION.split("/"),
-    dataTotalDocsSrc: DataTotalDocsSrcFields.FOLDER_SELECTION.split("/"),
-    dataParentUniqueIdsSrc: DataPathIdsSrcFields.FOLDER_SELECTION.split("/"),
-    dataDisabledSrc: DataDisabledSrcFields.FOLDER_SELECTION.split("/"),
-  };
   projectValidationXHR: boolean = false;
   customInvalidMessageKey: string = '';
 
-  public receivedData:any[] = [];
+
+  public sectionDataToPass: IDropDownTreeConfig = {
+    dataTooltipSrc: DataTooltipSrcFields.FOLDER_SELECTION,
+    dataUniqueFieldSrc: DataUniqueSrcFields.FOLDER_SELECTION,
+    dataVisibleNameSrc: DataVisibleNameSrcFields.FOLDER_SELECTION,
+    dataExpandableSrc: DataExpandableSrcFields.FOLDER_SELECTION,
+    dataChildrenSrc: DataChildrenSrcFields.FOLDER_SELECTION,
+    dataFavouriteSrc: DataFavouriteSrcFields.FOLDER_SELECTION,
+    dataTotalDocsSrc: DataTotalDocsSrcFields.FOLDER_SELECTION,
+    dataParentUniqueIdsSrc: DataPathIdsSrcFields.FOLDER_SELECTION,
+    dataDisabledSrc: DataDisabledSrcFields.FOLDER_SELECTION,
+    isSectionSelectionAllowed: true,
+    isRequired: true,
+    isDisabled: this.projectValidationXHR,
+    minSelectCount: 1,
+    maxSelectCount: 23,
+    isSingularInput: false,
+    isReadonly: false,
+    isCustomInputAllowed: false,
+    isSearchAllowed: true,
+    isAsynchronousSearchAllowed: true,
+    isClientSideSearchAllowed: true,
+    isResetOptionVisible: true,
+    isSelectAllAvailable: true,
+    placeholderKey: "add users",
+    noDataMessageKey: "no-data-available",
+    isMultipleLevel: true,
+    isAsynchronouslyExpandable: true,
+    isHierarchySelectionModificationAllowed: true,
+    invalidMessageKey: "customInvalidMessageKey",
+  };
+
+  public receivedData: any[] = [];
 
   constructor(
     private _httpService: HttpService
@@ -50,7 +74,7 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
     // this.makeAPICall();
-    !!this.preSelectedChips && this.getPreselectedValues();
+    // !!this.preSelectedChips && this.getPreselectedValues();
   }
 
   public getPreselectedValues() {
@@ -87,48 +111,28 @@ export class AppComponent implements OnInit {
   }
 
   public makeAPICall() {
-    if(this.dataToPass && this.dataToPass.length > 0) {
+    if (this.dataToPass && this.dataToPass.length > 0) {
       return;
     }
     this.loading = true;
 
     this._httpService.getData().subscribe({
-      next: (value) => {
-        // this.sectionDataToPass = {
-        //   allowSectionSelection: true,
-        //   sectionId: 11,
-        //   sectionTooltipKey: 'tooool',
-        //   sectionNameKey: 'section 1211',
-        // }
-        Object.assign(this.sectionDataToPass, {
-          allowSectionSelection: false,
-          sectionTooltipKey: "my section eeee",
-          sectionNameKey: "sectionnn name"
-        })
-        let section1 = MultiObjectSelectionComponent.createSection(this.sectionDataToPass, value as any[]);
+      next: (value: any) => {
+        if (!value || !value.length || value.length === 0) {
+          value = [];
+        }
 
-        let section2 = MultiObjectSelectionComponent.createSection({
-          dataUniqueFieldSrc: ["id"],
-          dataVisibleNameSrc: ["name"],
-          allowSectionSelection: false,
-          sectionTooltipKey: "my section 333",
-          sectionNameKey: ""
-        }, [
-          {
-            id: "-2",
-            name: "template folders"
-          },
-          {
-            id: "-3",
-            name: "favorite folders"
-          },
-          {
-            id: "-4",
-            name: "favorite folders"
-          }
-        ]);
-        console.log(section1);
-        this.dataToPass = [section1];
+        // prepare folder sections
+        let sectionHeader = {};
+        TreeUtility.propertyAdd(sectionHeader, this.sectionDataToPass.dataUniqueFieldSrc, "1");
+        TreeUtility.propertyAdd(sectionHeader, this.sectionDataToPass.dataVisibleNameSrc, "Folders");
+        this.sectionDataToPass.dataTooltipSrc && TreeUtility.propertyAdd(sectionHeader, this.sectionDataToPass.dataTooltipSrc, "Select Folders");
+        let treeSection1: IDropdownTree = TreeUtility.createExpliciteDropdownTree(sectionHeader, this.sectionDataToPass, "1");
+        value.forEach((element: any) => {
+          treeSection1.insert("1", element);
+        }); 
+        this.dataToPass = [treeSection1];
+
       },
       error: (err) => { console.log(err); },
       complete: () => {
@@ -195,9 +199,10 @@ export class AppComponent implements OnInit {
     console.log(e);
   }
 
-  loadChildren(requestData: DataRequester): void {
+  loadChildren(requestData: IExternalDataRequest): void {
 
-    let endPoint = `data${requestData.preparedData.optionData!.levelIndex! + 1}`
+    let endPoint = `data${requestData.originalNode!.levelIndex! + 1}`
+    console.log(endPoint);
 
     this._httpService.getData2(endPoint).subscribe({
       next: (data: any) => { requestData.onResult(data) },
@@ -208,7 +213,7 @@ export class AppComponent implements OnInit {
   }
 
   searchQuerySubscription!: Subscription;
-  searchValue(requestData: DataRequester) {
+  searchValue(requestData: IExternalDataRequest) {
     this.searchQuerySubscription && this.searchQuerySubscription.unsubscribe && this.searchQuerySubscription.unsubscribe();
     //cancel any ongonig search call
     this.searchQuerySubscription = this._httpService.getSearchResults().subscribe({

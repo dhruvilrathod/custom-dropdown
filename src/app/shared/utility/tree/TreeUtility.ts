@@ -1,5 +1,6 @@
 import { IDropDownTreeConfig } from "../../interfaces/custom-select.inteface";
 import { IOperatorFunction, IStopperFunction } from "../../interfaces/tree.interface";
+import { DropdownTree } from "./DropdownTree";
 import { Tree } from "./Tree";
 import { TreeNode } from "./TreeNode";
 
@@ -58,8 +59,12 @@ export class TreeUtility {
         }
     }
 
-    static createExpliciteTreeNode(originalData: any, config: IDropDownTreeConfig, defaultSelectionValue: boolean = false): TreeNode {
-        originalData.isSelected = true;
+    static createExpliciteDropdownTreeNode(originalData: any, config: IDropDownTreeConfig, defaultSelectionValue: boolean = false): TreeNode {
+        originalData.isSelected = defaultSelectionValue;
         return new TreeNode(originalData, config);
+    }
+
+    static createExpliciteDropdownTree(originalData: any, config: IDropDownTreeConfig, treeId: string | number): DropdownTree {
+        return new DropdownTree(config, originalData);
     }
 }
