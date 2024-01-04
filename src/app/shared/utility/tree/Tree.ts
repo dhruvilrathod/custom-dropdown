@@ -33,24 +33,38 @@ export class Tree implements ITree {
     }
 
     insert(dataUniqueFieldValue: string | number, value: any, inheritValuesFromParent: boolean = false, preselectedNodes?: TreeNode[]): boolean {
+
         for (let node of this.preOrderTraversal()) {
+
             if (node.dataUniqueFieldValue === dataUniqueFieldValue) {
+
                 let childNode = new TreeNode(value, this.config, node);
+                let preSelectedNodeIndex: number = -1;
 
                 if (preselectedNodes && preselectedNodes.length > 0) {
 
-                    let preSelectedNodeIndex: number = preselectedNodes.findIndex((val) => val.dataUniqueFieldValue === childNode.dataUniqueFieldValue);
+                    preSelectedNodeIndex = preselectedNodes.findIndex((val) => val.dataUniqueFieldValue === childNode.dataUniqueFieldValue);
                     if (preSelectedNodeIndex > -1) {
+                        childNode.isSelected = preselectedNodes[preSelectedNodeIndex].isSelected;
                         preselectedNodes.splice(preSelectedNodeIndex, 1);
-                        childNode.isSelected = true;
                     }
                 }
 
                 if (inheritValuesFromParent) {
-                    childNode.isSelected = node.isSelected;
-                    if (node.isDisabled) {
-                        childNode.isDisabled = node.isDisabled;
+
+                    if (preSelectedNodeIndex === -1) {
+                        childNode.isSelected = node.isSelected;
+
+                        if (node.isDisabled) {
+                            childNode.isDisabled = node.isDisabled;
+                        }
                     }
+
+
+                    if (node.isAllChildrenSelected) {
+                        node.isSelected = true;
+                    }
+
                 }
 
                 node.children.push(childNode);

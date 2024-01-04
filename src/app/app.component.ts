@@ -7,6 +7,7 @@ import { Subscription } from 'rxjs';
 import { IExternalDataRequest, IDropDownTreeConfig, IDropdownTree } from './shared/interfaces/custom-select.inteface';
 import { TreeUtility } from './shared/utility/tree/TreeUtility';
 import { TreeNode } from './shared/utility/tree/TreeNode';
+import { ITreeNode } from './shared/interfaces/tree.interface';
 
 @Component({
   selector: 'app-root',
@@ -49,7 +50,7 @@ export class AppComponent implements OnInit {
     isRequired: true,
     isDisabled: this.projectValidationXHR,
     minSelectCount: 1,
-    maxSelectCount: 3,
+    maxSelectCount: -3,
     isSingularInput: false,
     isReadonly: false,
     isCustomInputAllowed: true,
@@ -66,7 +67,7 @@ export class AppComponent implements OnInit {
     invalidMessageKey: "customInvalidMessageKey",
   };
 
-  public receivedData: any[] = [];
+  public receivedData: TreeNode[] = [];
 
   constructor(
     private _httpService: HttpService
@@ -74,7 +75,7 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
     // this.makeAPICall();
-    // !!this.preSelectedChips && this.getPreselectedValues();
+    !!this.preSelectedChips && this.getPreselectedValues();
   }
 
   public getPreselectedValues() {
@@ -83,18 +84,11 @@ export class AppComponent implements OnInit {
       next: (data: any) => {
         switch (1) {
           case MultiObjectSelectionTypeId.FOLDER_SELECTION:
-            this.preSelectedChips = MultiObjectSelectionComponent.preparePrefilledChipsData({
-              dataTooltipSrc: DataTooltipSrcFields.FOLDER_SELECTION.split("/"),
-              dataUniqueFieldSrc: DataUniqueSrcFields.FOLDER_SELECTION.split("/"),
-              dataVisibleNameSrc: DataVisibleNameSrcFields.FOLDER_SELECTION.split("/"),
-              dataExpandableSrc: DataExpandableSrcFields.FOLDER_SELECTION.split("/"),
-              dataChildrenSrc: DataChildrenSrcFields.FOLDER_SELECTION.split("/"),
-              dataFavouriteSrc: DataFavouriteSrcFields.FOLDER_SELECTION.split("/"),
-              dataTotalDocsSrc: DataTotalDocsSrcFields.FOLDER_SELECTION.split("/"),
-              dataParentUniqueIdsSrc: DataPathIdsSrcFields.FOLDER_SELECTION.split("/"),
-            }, data);
-            console.log(this.preSelectedChips);
-
+            console.log(data);
+            this.preSelectedChips = data.map((val: any) => TreeUtility.createExpliciteDropdownTreeNode(val, {
+              dataUniqueFieldSrc: "resourceId",
+              dataVisibleNameSrc: "resourceName",
+            }, true));
             break;
 
           default:
@@ -127,11 +121,34 @@ export class AppComponent implements OnInit {
         TreeUtility.propertyAdd(sectionHeader, this.sectionDataToPass.dataUniqueFieldSrc, "1");
         TreeUtility.propertyAdd(sectionHeader, this.sectionDataToPass.dataVisibleNameSrc, "Folders");
         this.sectionDataToPass.dataTooltipSrc && TreeUtility.propertyAdd(sectionHeader, this.sectionDataToPass.dataTooltipSrc, "Select Folders");
-        let treeSection1: IDropdownTree = TreeUtility.createExpliciteDropdownTree(sectionHeader, this.sectionDataToPass, "1");
+        let treeSection1: IDropdownTree = TreeUtility.createExpliciteDropdownTree(sectionHeader, this.sectionDataToPass, this.preSelectedChips);
         value.forEach((element: any) => {
           treeSection1.insert("1", element);
         });
-        this.dataToPass = [treeSection1];
+
+        // prepare custom options
+        let customFolderOptions: any[] = [
+          {
+
+            "folder_title": "All Folders",
+            "folderId": "-1"
+          },
+          {
+            "folder_title": "Favourite Folders",
+            "folderId": "-2",
+          },
+        ];
+        let customOptionsSectionHeader = {};
+        TreeUtility.propertyAdd(customOptionsSectionHeader, this.sectionDataToPass.dataUniqueFieldSrc, "0");
+        this.sectionDataToPass.dataTooltipSrc && TreeUtility.propertyAdd(customOptionsSectionHeader, this.sectionDataToPass.dataVisibleNameSrc, "Custom");
+        this.sectionDataToPass.dataTooltipSrc && TreeUtility.propertyAdd(customOptionsSectionHeader, this.sectionDataToPass.dataTooltipSrc, "Custom");
+        let treeSection2: IDropdownTree = TreeUtility.createExpliciteDropdownTree(customOptionsSectionHeader, this.sectionDataToPass);
+        customFolderOptions.forEach((element: any) => {
+          treeSection2.insert("0", element);
+        });
+
+        // this.dataToPass = [treeSection2, treeSection1];
+        this.dataToPass = [treeSection2, treeSection1];
 
       },
       error: (err) => { console.log(err); },
@@ -176,10 +193,11 @@ export class AppComponent implements OnInit {
     })
   }
 
-  public onChipAdd(e: any) {
+  public onChipAdd(e: ITreeNode) {
     console.log('received event for onChipAdd:', e);
   }
-  public onChipRemove(e: any) {
+  public onChipRemove(e: ITreeNode) {
+    // manually remove pre-selected chip
     console.log('received event for onChipRemove:', e);
   }
   public onChipClick(e: any) {

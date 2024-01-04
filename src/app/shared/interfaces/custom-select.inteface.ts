@@ -27,8 +27,10 @@ export interface IDropDownTreeConfig extends ITreeFieldsSrcConfigurations {
 export interface IDropdownTree extends ITree {
     config: IDropDownTreeConfig;
     validState: boolean;
-    insert(dataUniqueFieldValue: string | number, value: any): boolean;
+    preSelectedFieldValues: TreeNode[];
+    currentSelectedDataUniqueFieldValues: (string | number)[]; 
     isAllSelected: boolean;
+    insert(dataUniqueFieldValue: string | number, value: any): boolean;
     selectAll(isReset?: boolean): void;
     getCurrentSelectedNodes(): Array<TreeNode>;
     findNodes(searchValue: string): TreeNode[];

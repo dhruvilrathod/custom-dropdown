@@ -64,7 +64,7 @@ export class TreeUtility {
         return new TreeNode(originalData, config);
     }
 
-    static createExpliciteDropdownTree(originalData: any, config: IDropDownTreeConfig, treeId: string | number): DropdownTree {
-        return new DropdownTree(config, originalData);
+    static createExpliciteDropdownTree(originalData: any, config: IDropDownTreeConfig, preSelectedDataValues?: TreeNode[]): DropdownTree {
+        return new DropdownTree(config, originalData, preSelectedDataValues);
     }
 }

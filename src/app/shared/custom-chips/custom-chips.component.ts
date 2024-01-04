@@ -1,6 +1,5 @@
 import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { TreeNode } from '../utility/tree/TreeNode';
-import { DropdownTree } from '../utility/tree/DropdownTree';
 
 @Component({
 	selector: 'app-custom-chips',
@@ -107,19 +106,16 @@ export class CustomChipsComponent implements OnInit, AfterViewInit, OnDestroy {
 					this.onChipClick.emit(this.chipData[this._currentChipActiveIndex]);
 				}
 				else if (e.code === "Backspace" || e.code === "Delete") {
-					console.log(this.chipData, this._currentChipActiveIndex);
 
 					this.chipData[this._currentChipActiveIndex].isCurrentNodeActive = false;
 					this.removeChip(this.chipData[this._currentChipActiveIndex], false);
 
 					if (this._currentChipActiveIndex - 1 >= 0) {
-						console.log('if');
 
 						this._currentChipActiveIndex--;
 						this.chipData[this._currentChipActiveIndex].isCurrentNodeActive = true;
 					}
 					else if (this.chipData[this._currentChipActiveIndex] && this._currentChipActiveIndex + 1 <= this.chipData.length) {
-						console.log('esle', this.chipData[this._currentChipActiveIndex], this._currentChipActiveIndex);
 
 						this.chipData[this._currentChipActiveIndex].isCurrentNodeActive = true;
 					}

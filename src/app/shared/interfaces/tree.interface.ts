@@ -57,8 +57,4 @@ export interface ITreeNode {
     parent?: TreeNode;
     isLeaf: boolean;
     hasChildren: boolean;
-    onExpand: Function;
-    onCollaps: Function;
-    onSelect: Function;
-    onDeselect: Function;
 }

@@ -6,9 +6,9 @@ import { TreeUtility } from "./TreeUtility";
 export class DropdownTree extends Tree implements IDropdownTree {
 
     config: IDropDownTreeConfig;
-    preSelectedDataUniqueFieldValues: TreeNode[];
+    preSelectedFieldValues: TreeNode[];
 
-    constructor(config: IDropDownTreeConfig, rootValue: any, preSelectedDataUniqueFieldValues?: TreeNode[]) {
+    constructor(config: IDropDownTreeConfig, rootValue: any, preSelectedFieldValues?: TreeNode[]) {
         super(config, rootValue);
 
         this.config = config;
@@ -34,7 +34,7 @@ export class DropdownTree extends Tree implements IDropdownTree {
         this.config.noDataMessageKey = config.noDataMessageKey !== undefined ? config.noDataMessageKey : "";
         this.config.invalidMessageKey = config.invalidMessageKey !== undefined ? config.invalidMessageKey : "";
 
-        this.preSelectedDataUniqueFieldValues = preSelectedDataUniqueFieldValues || [];
+        this.preSelectedFieldValues = preSelectedFieldValues || [];
         if (this.config.maxSelectCount > -1 && this.config.maxSelectCount < this.config.minSelectCount) {
             this.config.minSelectCount = this.config.maxSelectCount;
         }
@@ -64,15 +64,23 @@ export class DropdownTree extends Tree implements IDropdownTree {
         return isAllSelected;
     }
 
+    public get currentSelectedDataUniqueFieldValues(): (string | number)[] {
+        let nodeIds: (string | number)[] = [];
+
+        TreeUtility.traverseAllNodes(this, "pre-order", (node: TreeNode) => nodeIds.push(node.dataUniqueFieldValue));
+
+        return nodeIds;
+    }
+
     public insert(dataUniqueFieldValue: string | number, value: any): boolean {
         if (this.config.isMultipleLevel === true) {
-            return super.insert(dataUniqueFieldValue, value, this.config.isHierarchySelectionModificationAllowed, this.preSelectedDataUniqueFieldValues);
+            return super.insert(dataUniqueFieldValue, value, this.config.isHierarchySelectionModificationAllowed, this.preSelectedFieldValues);
         }
         else {
             let currentNode: TreeNode | undefined = this.findNodeFromId(dataUniqueFieldValue);
 
             if (currentNode && currentNode.levelIndex !== undefined && currentNode.levelIndex === 0) {
-                return super.insert(dataUniqueFieldValue, value, this.config.isHierarchySelectionModificationAllowed, this.preSelectedDataUniqueFieldValues);
+                return super.insert(dataUniqueFieldValue, value, this.config.isHierarchySelectionModificationAllowed, this.preSelectedFieldValues);
             }
             else {
                 return false;
@@ -82,7 +90,11 @@ export class DropdownTree extends Tree implements IDropdownTree {
 
     public selectAll(isReset: boolean = false): void {
 
-        if(this.config.isSectionSelectionAllowed) {
+        if (isReset) {
+            this.preSelectedFieldValues = [];
+        }
+
+        if (this.config.isSectionSelectionAllowed) {
             this.root.isSelected = !isReset;
         }
 
@@ -94,6 +106,8 @@ export class DropdownTree extends Tree implements IDropdownTree {
     public getCurrentSelectedNodes(): Array<TreeNode> {
         let selectedNodes: TreeNode[] = [];
 
+        selectedNodes.push(...this.preSelectedFieldValues);
+
         TreeUtility.traverseAllNodes(this, "pre-order", (node: TreeNode) => {
 
             if (!this.config.isHierarchySelectionModificationAllowed && node.levelIndex !== undefined && node.levelIndex > 0 && node.isSelected === true) {
@@ -101,7 +115,7 @@ export class DropdownTree extends Tree implements IDropdownTree {
             }
 
             else if (this.config.isHierarchySelectionModificationAllowed && node.levelIndex !== undefined && node.levelIndex > 0) {
-                
+
                 if (node.children.length > 0 && node.isAllChildrenSelected === true && node.isSelected === true) {
                     node.children.forEach((val: TreeNode) => {
                         let deleteIndex = selectedNodes.indexOf(val);
@@ -109,7 +123,7 @@ export class DropdownTree extends Tree implements IDropdownTree {
                     });
                     selectedNodes.push(node);
                 }
-                
+
                 else if (node.children.length === 0 && node.isSelected === true && node.parent && node.parent.isAllChildrenSelected === false) {
                     selectedNodes.push(node);
                 }

@@ -63,7 +63,7 @@
     
         <ul *ngIf="!isLoading && !globalLoading && (primaryData) || (multiObjectDataForQuery)">
     
-            <ng-container *ngIf="queryState === false">
+            <ng-container *ngIf="queryState === false && primaryData.length > 0">
     
                 <div 
                     class="action-button-container"
@@ -71,6 +71,7 @@
                     <div class="buttons-container">
                         <button 
                             *ngIf="
+                                preSelectedChips.length === 0 &&
                                 (sectionConfigData.isSelectAllAvailable && !sectionConfigData.isSingularInput)
                                 && (!sectionConfigData.isReadonly && sectionConfigData.maxSelectCount !== undefined && sectionConfigData.maxSelectCount < 0)
                                 "
@@ -199,7 +200,7 @@
                         type="checkbox" 
                         [disabled]="op.isDisabled"
                         [checked]="op.isSelected"
-                        [indeterminate]="op.isPartiallySelected && !op.isSelected"
+                        [indeterminate]="sectionConfigData.isHierarchySelectionModificationAllowed && op.isPartiallySelected && !op.isSelected"
                         [id]="op.dataUniqueFieldValue"
                         (change)="optionSelectionTrigger($event, $any($event.target).checked, op, sectionData)">
                 </div>
