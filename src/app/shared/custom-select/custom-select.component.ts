@@ -402,10 +402,18 @@ export class CustomSelectComponent implements OnInit, OnDestroy {
 								this._updateChipData();
 							}
 
+							let checkNode = treeRef.findNodeFromId(TreeUtility.propertyAccess(val, this.sectionConfigData.dataUniqueFieldSrc));
 							if (this._initiallyRemovedChipIdsHolder) {
-								let checkNode = treeRef.findNodeFromId(TreeUtility.propertyAccess(val, this.sectionConfigData.dataUniqueFieldSrc));
 								if (checkNode && this._initiallyRemovedChipIdsHolder.includes(checkNode.dataUniqueFieldValue)) {
 									checkNode.isSelected = false;
+								}
+							}
+
+							if (checkNode && this.sectionConfigData.isAsynchronousSearchAllowed && this.queryAddedData.length > 0) {
+								let queryAddedDataIndex = this.queryAddedData.findIndex((n) => n.dataUniqueFieldValue === checkNode!.dataUniqueFieldValue);
+								if(queryAddedDataIndex > -1) {
+									this.queryAddedData.splice(queryAddedDataIndex, 1);
+									checkNode.isSelected = true;
 								}
 							}
 
