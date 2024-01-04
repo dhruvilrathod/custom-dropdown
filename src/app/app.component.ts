@@ -8,6 +8,7 @@ import { IExternalDataRequest, IDropDownTreeConfig, IDropdownTree } from './shar
 import { TreeUtility } from './shared/utility/tree/TreeUtility';
 import { TreeNode } from './shared/utility/tree/TreeNode';
 import { ITreeNode } from './shared/interfaces/tree.interface';
+import { cloneDeep } from 'lodash';
 
 @Component({
   selector: 'app-root',
@@ -27,6 +28,14 @@ export class AppComponent implements OnInit {
   public dataToPass!: IDropdownTree[];
 
   public preSelectedChips: any[] = [];
+
+  public t1PreselectedArr: any[] = [];
+  public t2PreselectedArr: any[] = [
+    {
+      "folder_name": "Favourite Folders",
+      "folderId": "-2",
+    }
+  ];
 
   public isVisible: boolean = true;
 
@@ -63,7 +72,7 @@ export class AppComponent implements OnInit {
     noDataMessageKey: "no-data-available",
     isMultipleLevel: true,
     isAsynchronouslyExpandable: true,
-    isHierarchySelectionModificationAllowed: true,
+    isHierarchySelectionModificationAllowed: false,
     invalidMessageKey: "customInvalidMessageKey",
   };
 
@@ -84,7 +93,17 @@ export class AppComponent implements OnInit {
       next: (data: any) => {
         switch (1) {
           case MultiObjectSelectionTypeId.FOLDER_SELECTION:
+            this.t1PreselectedArr = cloneDeep(data.map((val: any) => TreeUtility.createExpliciteDropdownTreeNode(val, {
+              dataUniqueFieldSrc: "resourceId",
+              dataVisibleNameSrc: "resourceName",
+            }, true)));
+            console.log(this.t1PreselectedArr);
+            
             console.log(data);
+            data.push({
+              "resourceName": "Favourite Folders",
+              "resourceId": "-2",
+            });
             this.preSelectedChips = data.map((val: any) => TreeUtility.createExpliciteDropdownTreeNode(val, {
               dataUniqueFieldSrc: "resourceId",
               dataVisibleNameSrc: "resourceName",
@@ -117,11 +136,13 @@ export class AppComponent implements OnInit {
         }
 
         // prepare folder sections
+        console.log(this.t1PreselectedArr.length);
+
         let sectionHeader = {};
         TreeUtility.propertyAdd(sectionHeader, this.sectionDataToPass.dataUniqueFieldSrc, "1");
         TreeUtility.propertyAdd(sectionHeader, this.sectionDataToPass.dataVisibleNameSrc, "Folders");
         this.sectionDataToPass.dataTooltipSrc && TreeUtility.propertyAdd(sectionHeader, this.sectionDataToPass.dataTooltipSrc, "Select Folders");
-        let treeSection1: IDropdownTree = TreeUtility.createExpliciteDropdownTree(sectionHeader, this.sectionDataToPass, this.preSelectedChips);
+        let treeSection1: IDropdownTree = TreeUtility.createExpliciteDropdownTree(sectionHeader, this.sectionDataToPass, this.t1PreselectedArr);
         value.forEach((element: any) => {
           treeSection1.insert("1", element);
         });
@@ -142,7 +163,7 @@ export class AppComponent implements OnInit {
         TreeUtility.propertyAdd(customOptionsSectionHeader, this.sectionDataToPass.dataUniqueFieldSrc, "0");
         this.sectionDataToPass.dataTooltipSrc && TreeUtility.propertyAdd(customOptionsSectionHeader, this.sectionDataToPass.dataVisibleNameSrc, "Custom");
         this.sectionDataToPass.dataTooltipSrc && TreeUtility.propertyAdd(customOptionsSectionHeader, this.sectionDataToPass.dataTooltipSrc, "Custom");
-        let treeSection2: IDropdownTree = TreeUtility.createExpliciteDropdownTree(customOptionsSectionHeader, this.sectionDataToPass);
+        let treeSection2: IDropdownTree = TreeUtility.createExpliciteDropdownTree(customOptionsSectionHeader, this.sectionDataToPass, this.t2PreselectedArr.map((data) => TreeUtility.createExpliciteDropdownTreeNode(data, this.sectionDataToPass, true)));
         customFolderOptions.forEach((element: any) => {
           treeSection2.insert("0", element);
         });
@@ -197,7 +218,9 @@ export class AppComponent implements OnInit {
     console.log('received event for onChipAdd:', e);
   }
   public onChipRemove(e: ITreeNode) {
-    // manually remove pre-selected chip
+    // manually remove pre-selected chip if dropdown is not opened yet
+
+
     console.log('received event for onChipRemove:', e);
   }
   public onChipClick(e: any) {

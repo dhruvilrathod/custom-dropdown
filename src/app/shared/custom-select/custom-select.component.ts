@@ -62,6 +62,8 @@ export class CustomSelectComponent implements OnInit, OnDestroy {
 
 	private _primaryDataHolder: IDropdownTree[] = [];
 	private _preSelectedChipsHolder: TreeNode[] = [];
+	private _initiallyRemovedChipIdsHolder: (string | number)[] = [];
+	private _queryAddedChipIdsHolder: (string | number)[] = [];
 	private _isDropdownCloseAllowed: boolean = true;
 
 	constructor() { }
@@ -83,6 +85,23 @@ export class CustomSelectComponent implements OnInit, OnDestroy {
 			this._primaryDataHolder = value;
 			if (this._primaryDataHolder.length === 0) {
 				this.chipData = [];
+			}
+			else {
+				let treeLen = value.length;
+				for (let t = 0; t < treeLen; t++) {
+					let childrenLen = value[t].root.children.length;
+					for (let c = 0; c < childrenLen; c++) {
+
+						let preSelectedIndex = this._preSelectedChipsHolder.findIndex((node: TreeNode) => (node.dataUniqueFieldValue === value[t].root.children[c].dataUniqueFieldValue) || this._initiallyRemovedChipIdsHolder.includes(node.dataUniqueFieldValue));
+						preSelectedIndex > -1 && this._preSelectedChipsHolder.splice(preSelectedIndex, 1);
+
+						if (this._initiallyRemovedChipIdsHolder.includes(value[t].root.children[c].dataUniqueFieldValue)) {
+							value[t].root.children[c].isSelected = false;
+							this._initiallyRemovedChipIdsHolder.splice(this._initiallyRemovedChipIdsHolder.indexOf(value[t].root.children[c].dataUniqueFieldValue), 1);
+						}
+
+					}
+				}
 			}
 
 			this.isLoading = false;
@@ -137,15 +156,33 @@ export class CustomSelectComponent implements OnInit, OnDestroy {
 
 		let isPreselectedChipRemoved: boolean = false;
 
-		if (this.preSelectedChips.includes(chip) && this.chipData.includes(chip)) {
+		let preSelectedIndex: number = this.preSelectedChips.findIndex((data: TreeNode) => data.dataUniqueFieldValue === chip.dataUniqueFieldValue);
 
-			let preSelectedIndex: number = this.preSelectedChips.indexOf(chip);
-			preSelectedIndex > -1 && this.preSelectedChips.splice(preSelectedIndex, 1);
+		if (preSelectedIndex > -1 && this.chipData.includes(chip)) {
+
+			this.preSelectedChips.splice(preSelectedIndex, 1);
 
 			let chipDataIndex: number = this.chipData.indexOf(chip);
 			chipDataIndex > -1 && this.chipData.splice(chipDataIndex, 1);
 
 			isPreselectedChipRemoved = true;
+
+			let treeLen = this.primaryData.length;
+
+			if (treeLen === 0) {
+				!this._initiallyRemovedChipIdsHolder.includes(chip.dataUniqueFieldValue) && this._initiallyRemovedChipIdsHolder.push(chip.dataUniqueFieldValue);
+			}
+			else {
+				for (let t = 0; t < treeLen; t++) {
+					let treePreselectedDeleteIndex: number = this.primaryData[t].preSelectedFieldValues.findIndex((val: TreeNode) => val.dataUniqueFieldValue === chip.dataUniqueFieldValue);
+					treePreselectedDeleteIndex > -1 && this.primaryData[t].preSelectedFieldValues.splice(treePreselectedDeleteIndex, 1);
+				}
+			}
+		}
+
+		if (this.sectionConfigData.isAsynchronousSearchAllowed && this.queryAddedData.length > 0) {
+			let queryAddedDataIndex = this.queryAddedData.findIndex((val) => val.dataUniqueFieldValue === chip.dataUniqueFieldValue);
+			queryAddedDataIndex > -1 && this.queryAddedData.splice(queryAddedDataIndex, 1);
 		}
 
 		this.onChipRemove.emit(chip);
@@ -215,7 +252,10 @@ export class CustomSelectComponent implements OnInit, OnDestroy {
 						this.multiObjectDataForQuery[0].root.children.push(...data
 							.filter((val) => !allCurrentSelectedIds.includes(TreeUtility.propertyAccess(val, this.sectionConfigData.dataUniqueFieldSrc)))
 							.map((val) => {
-								return TreeUtility.createExpliciteDropdownTreeNode(val, this.sectionConfigData);
+								let uniqueId = TreeUtility.propertyAccess(val, this.sectionConfigData.dataUniqueFieldSrc);
+								let preSelectedIndex = this._preSelectedChipsHolder.findIndex((node: TreeNode) => node.dataUniqueFieldValue === uniqueId);
+								let queryAddedDataIndex = this.queryAddedData.findIndex((node: TreeNode) => node.dataUniqueFieldValue === uniqueId);
+								return TreeUtility.createExpliciteDropdownTreeNode(val, this.sectionConfigData, preSelectedIndex > -1 || queryAddedDataIndex > -1);
 							}));
 					}
 					this.searchLoading = false;
@@ -296,9 +336,41 @@ export class CustomSelectComponent implements OnInit, OnDestroy {
 			}
 		}
 
-		treeRef.nodeSelection(nodeRef.dataUniqueFieldValue, selectionVal);
+		!this.queryState && treeRef.nodeSelection(nodeRef.dataUniqueFieldValue, selectionVal);
+		!this.queryState && this._updateChipData();
+
+		if (this.queryState) {
+
+			let foundLocaly: boolean = !this.primaryData.every((tree: IDropdownTree) => {
+				if (tree.findNodeFromId(nodeRef.dataUniqueFieldValue)) return false;
+				else return true;
+			});
+
+			if (!foundLocaly) {
+
+				if (selectionVal) {
+					this._preSelectedChipsHolder.push(nodeRef);
+					this.chipData.push(nodeRef);
+					this.queryAddedData.push(nodeRef);
+				}
+				else {
+					let chipDataIndex = this.chipData.findIndex((val) => val.dataUniqueFieldValue === nodeRef.dataUniqueFieldValue);
+					chipDataIndex > -1 && this.chipData.splice(chipDataIndex, 1);
+
+					let queryAddedDataIndex = this.queryAddedData.findIndex((val) => val.dataUniqueFieldValue === nodeRef.dataUniqueFieldValue);
+					queryAddedDataIndex > -1 && this.queryAddedData.splice(queryAddedDataIndex, 1);
+
+					let preSelectedIndex = this._preSelectedChipsHolder.findIndex((val) => val.dataUniqueFieldValue === nodeRef.dataUniqueFieldValue);
+					preSelectedIndex > -1 && this._preSelectedChipsHolder.splice(preSelectedIndex, 1);
+				}
+			}
+			else {
+				treeRef.nodeSelection(nodeRef.dataUniqueFieldValue, selectionVal)
+			}
+
+		}
+
 		selectionVal ? this.onChipAdd.emit(nodeRef) : this.onChipRemove.emit(nodeRef);
-		this._updateChipData();
 	}
 
 	public expandTrigger(nodeRef: TreeNode, treeRef: IDropdownTree): void {
@@ -329,6 +401,14 @@ export class CustomSelectComponent implements OnInit, OnDestroy {
 
 								this._updateChipData();
 							}
+
+							if (this._initiallyRemovedChipIdsHolder) {
+								let checkNode = treeRef.findNodeFromId(TreeUtility.propertyAccess(val, this.sectionConfigData.dataUniqueFieldSrc));
+								if (checkNode && this._initiallyRemovedChipIdsHolder.includes(checkNode.dataUniqueFieldValue)) {
+									checkNode.isSelected = false;
+								}
+							}
+
 						});
 					}
 					nodeRef.isChildernLoading = false;
@@ -361,6 +441,11 @@ export class CustomSelectComponent implements OnInit, OnDestroy {
 		// adding custom added chips if custom input is allowed
 		if (this.sectionConfigData.isCustomInputAllowed) {
 			this.chipData.push(...this.customchipsData);
+		}
+
+		// adding custom added chips if asynchronous search is allowed
+		if (this.sectionConfigData.isAsynchronousSearchAllowed && this.queryAddedData.length > 0) {
+			this.chipData.push(...this.queryAddedData);
 		}
 
 		this._sendLatestDropdownSelection();
