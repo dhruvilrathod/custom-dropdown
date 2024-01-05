@@ -76,7 +76,7 @@ export class AppComponent implements OnInit {
     invalidMessageKey: "customInvalidMessageKey",
   };
 
-  public receivedData: TreeNode[] = [];
+  public receivedData: ITreeNode[] = [];
 
   constructor(
     private _httpService: HttpService
@@ -183,7 +183,7 @@ export class AppComponent implements OnInit {
     console.log(message);
   }
 
-  public async finalDataReceived(data: TreeNode[]) {
+  public async finalDataReceived(data: ITreeNode[]) {
     console.log(data);
     this.receivedData = data;
     // if (data.length > 0) {

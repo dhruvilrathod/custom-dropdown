@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
-import { TreeNode } from '../utility/tree/TreeNode';
+import { ITreeNode } from '../interfaces/tree.interface';
 
 @Component({
 	selector: 'app-custom-chips',
@@ -11,12 +11,12 @@ export class CustomChipsComponent implements OnInit, AfterViewInit, OnDestroy {
 	@ViewChild('chipsContainer') chipsContainer!: ElementRef<HTMLUListElement>;
 	@ViewChild('chip') chip!: ElementRef<HTMLLIElement>;
 
-	@Input('chipData') chipData: TreeNode[] = [];
+	@Input('chipData') chipData: ITreeNode[] = [];
 
 	@Output('focusSearch') focusSearch: EventEmitter<boolean> = new EventEmitter<boolean>();
-	@Output('onChipRemove') onChipRemove: EventEmitter<TreeNode> = new EventEmitter<TreeNode>();
-	@Output('onChipClick') onChipClick: EventEmitter<TreeNode> = new EventEmitter<TreeNode>();
-	@Output('onChipContextMenu') onChipContextMenu: EventEmitter<TreeNode> = new EventEmitter<TreeNode>();
+	@Output('onChipRemove') onChipRemove: EventEmitter<ITreeNode> = new EventEmitter<ITreeNode>();
+	@Output('onChipClick') onChipClick: EventEmitter<ITreeNode> = new EventEmitter<ITreeNode>();
+	@Output('onChipContextMenu') onChipContextMenu: EventEmitter<ITreeNode> = new EventEmitter<ITreeNode>();
 
 
 	private _currentChipActiveIndex: number = -1;
@@ -44,7 +44,7 @@ export class CustomChipsComponent implements OnInit, AfterViewInit, OnDestroy {
 		}
 	}
 
-	public activateChip(chip: TreeNode) {
+	public activateChip(chip: ITreeNode) {
 
 		for (let i = 0, chipDataLen = this.chipData.length; i < chipDataLen; i++) {
 			if (this.chipData[i].isCurrentNodeActive) {
@@ -60,7 +60,7 @@ export class CustomChipsComponent implements OnInit, AfterViewInit, OnDestroy {
 		this.onChipClick.emit(chip);
 	}
 
-	public openContextMenu(e: Event, chip: TreeNode) {
+	public openContextMenu(e: Event, chip: ITreeNode) {
 		e.preventDefault();
 		this.activateChip(chip);
 		this.onChipContextMenu.emit(chip);
@@ -76,7 +76,7 @@ export class CustomChipsComponent implements OnInit, AfterViewInit, OnDestroy {
 		this._isAnyChipActive = false;
 	}
 
-	public removeChip(chip: TreeNode, reset: boolean = true) {
+	public removeChip(chip: ITreeNode, reset: boolean = true) {
 		this.onChipRemove.emit(chip);
 		reset && this.resetActiveChip();
 	}

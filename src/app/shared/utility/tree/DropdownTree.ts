@@ -1,4 +1,5 @@
 import { IDropdownTree, IDropDownTreeConfig } from "../../interfaces/custom-select.inteface";
+import { ITreeNode } from "../../interfaces/tree.interface";
 import { Tree } from "./Tree";
 import { TreeNode } from "./TreeNode";
 import { TreeUtility } from "./TreeUtility";
@@ -57,9 +58,9 @@ export class DropdownTree extends Tree implements IDropdownTree {
     public get isAllSelected(): boolean {
         let isAllSelected: boolean = true;
 
-        TreeUtility.traverseAllNodes(this, "pre-order", (node: TreeNode) => {
+        TreeUtility.traverseAllNodes(this, "pre-order", (node: ITreeNode) => {
             isAllSelected = isAllSelected && ((node.isDisabled === false && node.isSelected === true) || (node.isDisabled === true));
-        }, this.root, (node: TreeNode) => isAllSelected === false);
+        }, this.root, (node: ITreeNode) => isAllSelected === false);
 
         return isAllSelected;
     }
@@ -67,7 +68,7 @@ export class DropdownTree extends Tree implements IDropdownTree {
     public get currentSelectedDataUniqueFieldValues(): (string | number)[] {
         let nodeIds: (string | number)[] = [];
 
-        TreeUtility.traverseAllNodes(this, "pre-order", (node: TreeNode) => nodeIds.push(node.dataUniqueFieldValue));
+        TreeUtility.traverseAllNodes(this, "pre-order", (node: ITreeNode) => nodeIds.push(node.dataUniqueFieldValue));
 
         return nodeIds;
     }
@@ -98,17 +99,17 @@ export class DropdownTree extends Tree implements IDropdownTree {
             this.root.isSelected = !isReset;
         }
 
-        TreeUtility.traverseAllNodes(this, "pre-order", (node: TreeNode) => {
+        TreeUtility.traverseAllNodes(this, "pre-order", (node: ITreeNode) => {
             !(this.config.isDisabled || node?.isDisabled) && (node.isSelected = !isReset);
         });
     }
 
-    public getCurrentSelectedNodes(): Array<TreeNode> {
-        let selectedNodes: TreeNode[] = [];
+    public getCurrentSelectedNodes(): Array<ITreeNode> {
+        let selectedNodes: ITreeNode[] = [];
 
         selectedNodes.push(...this.preSelectedFieldValues);
 
-        TreeUtility.traverseAllNodes(this, "pre-order", (node: TreeNode) => {
+        TreeUtility.traverseAllNodes(this, "pre-order", (node: ITreeNode) => {
 
             if (!this.config.isHierarchySelectionModificationAllowed && node.levelIndex !== undefined && node.levelIndex > 0 && node.isSelected === true) {
                 selectedNodes.push(node);
@@ -117,7 +118,7 @@ export class DropdownTree extends Tree implements IDropdownTree {
             else if (this.config.isHierarchySelectionModificationAllowed && node.levelIndex !== undefined && node.levelIndex > 0) {
 
                 if (node.children.length > 0 && node.isAllChildrenSelected === true && node.isSelected === true) {
-                    node.children.forEach((val: TreeNode) => {
+                    node.children.forEach((val: ITreeNode) => {
                         let deleteIndex = selectedNodes.indexOf(val);
                         deleteIndex > -1 && selectedNodes.splice(deleteIndex, 1);
                     });
@@ -132,7 +133,7 @@ export class DropdownTree extends Tree implements IDropdownTree {
             else if (this.config.isHierarchySelectionModificationAllowed && node.levelIndex !== undefined && node.levelIndex === 0 && node.isAllChildrenSelected === true) {
                 selectedNodes.push(...this.root.children);
             }
-        }, undefined, (node: TreeNode) => this.config.isHierarchySelectionModificationAllowed === true && node.isAllChildrenSelected === true && node.parent !== undefined && node.parent.isAllChildrenSelected === true);
+        }, undefined, (node: ITreeNode) => this.config.isHierarchySelectionModificationAllowed === true && node.isAllChildrenSelected === true && node.parent !== undefined && node.parent.isAllChildrenSelected === true);
 
         return selectedNodes;
     }
@@ -148,7 +149,7 @@ export class DropdownTree extends Tree implements IDropdownTree {
         if (currentNode) {
 
             if (selectionVal && this.config.maxSelectCount !== undefined && this.config.maxSelectCount > -1 && (this.getCurrentSelectedNodes().length === this.config.maxSelectCount)) {
-                let removedNode: TreeNode | undefined = this.getCurrentSelectedNodes().pop();
+                let removedNode: ITreeNode | undefined = this.getCurrentSelectedNodes().pop();
                 if (removedNode) {
                     this.nodeSelection(removedNode.dataUniqueFieldValue, false);
                 }
@@ -157,12 +158,12 @@ export class DropdownTree extends Tree implements IDropdownTree {
             !(this.config.isDisabled || currentNode?.isDisabled) && (currentNode.isSelected = selectionVal);
 
             if (this.config.isHierarchySelectionModificationAllowed) {
-                TreeUtility.traverseAllNodes(this, "pre-order", (node: TreeNode) => {
+                TreeUtility.traverseAllNodes(this, "pre-order", (node: ITreeNode) => {
                     !(this.config.isDisabled || node?.isDisabled) && (node.isSelected = selectionVal);
                 }, currentNode);
 
-                TreeUtility.traverseAllNodes(this, "post-order", (node: TreeNode) => {
-                    node.isSelected = node.children.length > 0 ? node.children.some((val: TreeNode) => val.isSelected === false && val.isDisabled === false) ? false : true : node.isSelected;
+                TreeUtility.traverseAllNodes(this, "post-order", (node: ITreeNode) => {
+                    node.isSelected = node.children.length > 0 ? node.children.some((val: ITreeNode) => val.isSelected === false && val.isDisabled === false) ? false : true : node.isSelected;
                 });
             }
         }
@@ -178,7 +179,7 @@ export class DropdownTree extends Tree implements IDropdownTree {
     }
 
     public changeNodeDisablility(isDisabled: boolean = true): void {
-        TreeUtility.traverseAllNodes(this, "pre-order", (node: TreeNode) => {
+        TreeUtility.traverseAllNodes(this, "pre-order", (node: ITreeNode) => {
             node.isDisabled = isDisabled;
         });
     }

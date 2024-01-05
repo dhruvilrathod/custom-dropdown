@@ -1,11 +1,11 @@
 import { Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { IDropdownTree, IDropDownTreeConfig } from '../interfaces/custom-select.inteface';
-import { TreeNode } from '../utility/tree/TreeNode';
 import { AbstractControl, FormControl } from '@angular/forms';
 import { NgbPopover } from '@ng-bootstrap/ng-bootstrap';
 import { CustomChipsComponent } from '../custom-chips/custom-chips.component';
 import { IExternalDataRequest } from '../interfaces/custom-select.inteface';
 import { TreeUtility } from '../utility/tree/TreeUtility';
+import { ITreeNode } from '../interfaces/tree.interface';
 
 @Component({
 	selector: 'app-custom-select',
@@ -26,22 +26,22 @@ export class CustomSelectComponent implements OnInit, OnDestroy {
 	@Input('sectionConfigData') sectionConfigData!: IDropDownTreeConfig;
 	@Input('globalLoading') globalLoading: boolean = false;
 	@Input('preSelectedObjectIds') preSelectedObjectIds: (string | number)[] = [];
-	@Input('preSelectedChips') get preSelectedChips(): TreeNode[] { return this._preSelectedChipsHolder; };
+	@Input('preSelectedChips') get preSelectedChips(): ITreeNode[] { return this._preSelectedChipsHolder; };
 	@Input('dropdownFormControl') dropdownFormControl: AbstractControl = new FormControl();
 	@Input('externalValidation') externalValidation: boolean = true;
 	@Input('isDropdownDisabled') isDropdownDisabled: boolean = false;
 
-	@Output('selectionChange') selectionChange: EventEmitter<TreeNode[]> = new EventEmitter<TreeNode[]>();
+	@Output('selectionChange') selectionChange: EventEmitter<ITreeNode[]> = new EventEmitter<ITreeNode[]>();
 	@Output('initialLoad') initialLoad: EventEmitter<boolean> = new EventEmitter<boolean>();
 	@Output('errorMessage') errorMessage: EventEmitter<string> = new EventEmitter<string>();
 	@Output('dataRequester') dataRequester: EventEmitter<IExternalDataRequest> = new EventEmitter<IExternalDataRequest>();
 	@Output('onQuerySeach') onQuerySeach: EventEmitter<IExternalDataRequest> = new EventEmitter<IExternalDataRequest>();
 	@Output('onReset') onReset: EventEmitter<void> = new EventEmitter<void>();
 	@Output('onSelectAll') onSelectAll: EventEmitter<void> = new EventEmitter<void>();
-	@Output('onChipAdd') onChipAdd: EventEmitter<TreeNode> = new EventEmitter<TreeNode>();
-	@Output('onChipRemove') onChipRemove: EventEmitter<TreeNode> = new EventEmitter<TreeNode>();
-	@Output('onChipClick') onChipClick: EventEmitter<TreeNode> = new EventEmitter<TreeNode>();
-	@Output('onChipContextMenu') onChipContextMenu: EventEmitter<TreeNode> = new EventEmitter<TreeNode>();
+	@Output('onChipAdd') onChipAdd: EventEmitter<ITreeNode> = new EventEmitter<ITreeNode>();
+	@Output('onChipRemove') onChipRemove: EventEmitter<ITreeNode> = new EventEmitter<ITreeNode>();
+	@Output('onChipClick') onChipClick: EventEmitter<ITreeNode> = new EventEmitter<ITreeNode>();
+	@Output('onChipContextMenu') onChipContextMenu: EventEmitter<ITreeNode> = new EventEmitter<ITreeNode>();
 
 	// dropdown UI states
 	public queryState: boolean = false;
@@ -53,16 +53,16 @@ export class CustomSelectComponent implements OnInit, OnDestroy {
 
 	// other variables
 	public computedWidth: string = '';
-	public chipData: TreeNode[] = [];
-	public queryData: TreeNode[] = [];
-	public customchipsData: TreeNode[] = [];
-	public preFilledData: TreeNode[] = [];
-	public queryAddedData: TreeNode[] = [];
+	public chipData: ITreeNode[] = [];
+	public queryData: ITreeNode[] = [];
+	public customchipsData: ITreeNode[] = [];
+	public preFilledData: ITreeNode[] = [];
+	public queryAddedData: ITreeNode[] = [];
 	public multiObjectData: IDropdownTree[] = [];
 	public multiObjectDataForQuery?: IDropdownTree[] = [];
 
 	private _primaryDataHolder: IDropdownTree[] = [];
-	private _preSelectedChipsHolder: TreeNode[] = [];
+	private _preSelectedChipsHolder: ITreeNode[] = [];
 	private _initiallyRemovedChipIdsHolder: (string | number)[] = [];
 	private _isDropdownCloseAllowed: boolean = true;
 
@@ -92,7 +92,7 @@ export class CustomSelectComponent implements OnInit, OnDestroy {
 					let childrenLen = value[t].root.children.length;
 					for (let c = 0; c < childrenLen; c++) {
 
-						let preSelectedIndex = this._preSelectedChipsHolder.findIndex((node: TreeNode) => (node.dataUniqueFieldValue === value[t].root.children[c].dataUniqueFieldValue) || this._initiallyRemovedChipIdsHolder.includes(node.dataUniqueFieldValue));
+						let preSelectedIndex = this._preSelectedChipsHolder.findIndex((node: ITreeNode) => (node.dataUniqueFieldValue === value[t].root.children[c].dataUniqueFieldValue) || this._initiallyRemovedChipIdsHolder.includes(node.dataUniqueFieldValue));
 						preSelectedIndex > -1 && this._preSelectedChipsHolder.splice(preSelectedIndex, 1);
 
 						if (this._initiallyRemovedChipIdsHolder.includes(value[t].root.children[c].dataUniqueFieldValue)) {
@@ -108,7 +108,7 @@ export class CustomSelectComponent implements OnInit, OnDestroy {
 		}
 	}
 
-	set preSelectedChips(value: TreeNode[]) {
+	set preSelectedChips(value: ITreeNode[]) {
 		if (value && value.length && value.length > 0) {
 			this._preSelectedChipsHolder = value;
 			this.chipData.push(...value);
@@ -141,7 +141,7 @@ export class CustomSelectComponent implements OnInit, OnDestroy {
 		// reset the needed fields
 	}
 
-	public chipRemovalTrigger(chip: TreeNode) {
+	public chipRemovalTrigger(chip: ITreeNode) {
 
 		this._preventDropdownStateChange();
 
@@ -156,7 +156,7 @@ export class CustomSelectComponent implements OnInit, OnDestroy {
 
 		let isPreselectedChipRemoved: boolean = false;
 
-		let preSelectedIndex: number = this.preSelectedChips.findIndex((data: TreeNode) => data.dataUniqueFieldValue === chip.dataUniqueFieldValue);
+		let preSelectedIndex: number = this.preSelectedChips.findIndex((data: ITreeNode) => data.dataUniqueFieldValue === chip.dataUniqueFieldValue);
 
 		if (preSelectedIndex > -1 && this.chipData.includes(chip)) {
 
@@ -174,7 +174,7 @@ export class CustomSelectComponent implements OnInit, OnDestroy {
 			}
 			else {
 				for (let t = 0; t < treeLen; t++) {
-					let treePreselectedDeleteIndex: number = this.primaryData[t].preSelectedFieldValues.findIndex((val: TreeNode) => val.dataUniqueFieldValue === chip.dataUniqueFieldValue);
+					let treePreselectedDeleteIndex: number = this.primaryData[t].preSelectedFieldValues.findIndex((val: ITreeNode) => val.dataUniqueFieldValue === chip.dataUniqueFieldValue);
 					treePreselectedDeleteIndex > -1 && this.primaryData[t].preSelectedFieldValues.splice(treePreselectedDeleteIndex, 1);
 				}
 			}
@@ -227,7 +227,7 @@ export class CustomSelectComponent implements OnInit, OnDestroy {
 		searchVal = searchVal.toString().toLowerCase().trim();
 
 		if (this.sectionConfigData.isClientSideSearchAllowed) {
-			let searchNodes: TreeNode[] = [];
+			let searchNodes: ITreeNode[] = [];
 
 			this.primaryData.forEach((val: IDropdownTree) => {
 				searchNodes.push(...val.findNodes(searchVal));
@@ -253,8 +253,8 @@ export class CustomSelectComponent implements OnInit, OnDestroy {
 							.filter((val) => !allCurrentSelectedIds.includes(TreeUtility.propertyAccess(val, this.sectionConfigData.dataUniqueFieldSrc)))
 							.map((val) => {
 								let uniqueId = TreeUtility.propertyAccess(val, this.sectionConfigData.dataUniqueFieldSrc);
-								let preSelectedIndex = this._preSelectedChipsHolder.findIndex((node: TreeNode) => node.dataUniqueFieldValue === uniqueId);
-								let queryAddedDataIndex = this.queryAddedData.findIndex((node: TreeNode) => node.dataUniqueFieldValue === uniqueId);
+								let preSelectedIndex = this._preSelectedChipsHolder.findIndex((node: ITreeNode) => node.dataUniqueFieldValue === uniqueId);
+								let queryAddedDataIndex = this.queryAddedData.findIndex((node: ITreeNode) => node.dataUniqueFieldValue === uniqueId);
 								return TreeUtility.createExpliciteDropdownTreeNode(val, this.sectionConfigData, preSelectedIndex > -1 || queryAddedDataIndex > -1);
 							}));
 					}
@@ -323,7 +323,7 @@ export class CustomSelectComponent implements OnInit, OnDestroy {
 
 	}
 
-	public optionSelectionTrigger(e: Event, selectionVal: boolean, nodeRef: TreeNode, treeRef: IDropdownTree): void {
+	public optionSelectionTrigger(e: Event, selectionVal: boolean, nodeRef: ITreeNode, treeRef: IDropdownTree): void {
 
 		if (selectionVal && this.chipData.length === this.sectionConfigData.maxSelectCount) {
 			if (this.sectionConfigData.isSingularInput) {
@@ -375,7 +375,7 @@ export class CustomSelectComponent implements OnInit, OnDestroy {
 		selectionVal ? this.onChipAdd.emit(nodeRef) : this.onChipRemove.emit(nodeRef);
 	}
 
-	public expandTrigger(nodeRef: TreeNode, treeRef: IDropdownTree): void {
+	public expandTrigger(nodeRef: ITreeNode, treeRef: IDropdownTree): void {
 
 		nodeRef.isChildernLoading = false;
 
@@ -398,7 +398,7 @@ export class CustomSelectComponent implements OnInit, OnDestroy {
 						data.forEach((val: any) => {
 							treeRef.insert(nodeRef.dataUniqueFieldValue, val);
 							if (this._preSelectedChipsHolder.length > 0) {
-								let preSelectedIndex = this._preSelectedChipsHolder.findIndex((node: TreeNode) => node.dataUniqueFieldValue === TreeUtility.propertyAccess(val, this.sectionConfigData.dataUniqueFieldSrc));
+								let preSelectedIndex = this._preSelectedChipsHolder.findIndex((node: ITreeNode) => node.dataUniqueFieldValue === TreeUtility.propertyAccess(val, this.sectionConfigData.dataUniqueFieldSrc));
 								preSelectedIndex > -1 && this._preSelectedChipsHolder.splice(preSelectedIndex, 1);
 
 								this._updateChipData();
@@ -443,7 +443,7 @@ export class CustomSelectComponent implements OnInit, OnDestroy {
 			}
 
 			if (this._preSelectedChipsHolder.length > 0) {
-				this._preSelectedChipsHolder = this._preSelectedChipsHolder.filter((val: TreeNode) => val.isSelected === true);
+				this._preSelectedChipsHolder = this._preSelectedChipsHolder.filter((val: ITreeNode) => val.isSelected === true);
 
 			}
 		}
@@ -462,7 +462,7 @@ export class CustomSelectComponent implements OnInit, OnDestroy {
 	}
 
 	private _sendLatestDropdownSelection(): void {
-		let selectionNodes: TreeNode[] = [];
+		let selectionNodes: ITreeNode[] = [];
 		for (let i = 0, chipDataLen = this.chipData.length; i < chipDataLen; i++) {
 			!this.chipData[i].isCustom && selectionNodes.push(this.chipData[i]);
 			this.chipData[i].isCustom && selectionNodes.push(this.chipData[i]);

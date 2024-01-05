@@ -1,5 +1,4 @@
-import { TreeNode } from "../utility/tree/TreeNode";
-import { ITreeFieldsSrcConfigurations, ITree } from "./tree.interface";
+import { ITreeFieldsSrcConfigurations, ITree, ITreeNode } from "./tree.interface";
 
 export interface IDropDownTreeConfig extends ITreeFieldsSrcConfigurations {
     isRequired?: boolean; // done
@@ -27,25 +26,25 @@ export interface IDropDownTreeConfig extends ITreeFieldsSrcConfigurations {
 export interface IDropdownTree extends ITree {
     config: IDropDownTreeConfig;
     validState: boolean;
-    preSelectedFieldValues: TreeNode[];
+    preSelectedFieldValues: ITreeNode[];
     currentSelectedDataUniqueFieldValues: (string | number)[]; 
     isAllSelected: boolean;
     insert(dataUniqueFieldValue: string | number, value: any): boolean;
     selectAll(isReset?: boolean): void;
-    getCurrentSelectedNodes(): Array<TreeNode>;
-    findNodes(searchValue: string): TreeNode[];
+    getCurrentSelectedNodes(): Array<ITreeNode>;
+    findNodes(searchValue: string): ITreeNode[];
     nodeSelection(dataUniqueFieldValue: string | number, selectionVal?: boolean): void;
     changeNodeDisablility(isDisabled?: boolean): void;
 }
 
 export interface IExternalDataRequest {
-    originalNode?: TreeNode,
+    originalNode?: ITreeNode,
     searchVal?: string | number;
     onResult(...args: any): void;
     onError?(...args: any): void;
 }
 
 export interface IDropdownNodeChangeDetection<T = "add" | "remove" | "click" | "contextmenu"> {
-    originalNode: TreeNode,
+    originalNode: ITreeNode,
     eventType: T;
 }

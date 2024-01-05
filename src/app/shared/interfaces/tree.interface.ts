@@ -1,5 +1,3 @@
-import { TreeNode } from "../utility/tree/TreeNode";
-
 export interface ITreeFieldsSrcConfigurations {
     dataUniqueFieldSrc: string;
     dataVisibleNameSrc: string;
@@ -15,21 +13,21 @@ export interface ITreeFieldsSrcConfigurations {
 }
 
 export interface IOperatorFunction {
-    (node: TreeNode): void;
+    (node: ITreeNode): void;
 }
 
 export interface IStopperFunction {
-    (node: TreeNode): boolean;
+    (node: ITreeNode): boolean;
 }
 
 export interface ITree {
-    root: TreeNode;
+    root: ITreeNode;
     config: ITreeFieldsSrcConfigurations;
-    preOrderTraversal(node?: TreeNode): Generator<TreeNode>
-    postOrderTraversal(node?: TreeNode): Generator<TreeNode>;
-    insert(dataUniqueFieldValue: string | number, value: any, inheritSelectionValueFromParent?: boolean, preselectedNodes?: TreeNode[]): boolean
+    preOrderTraversal(node?: ITreeNode): Generator<ITreeNode>
+    postOrderTraversal(node?: ITreeNode): Generator<ITreeNode>;
+    insert(dataUniqueFieldValue: string | number, value: any, inheritSelectionValueFromParent?: boolean, preselectedNodes?: ITreeNode[]): boolean
     remove(key: string | number): boolean;
-    findNodeFromId(dataUniqueFieldValue: string | number): TreeNode | undefined;
+    findNodeFromId(dataUniqueFieldValue: string | number): ITreeNode | undefined;
 }
 
 export interface ITreeNode {
@@ -52,9 +50,9 @@ export interface ITreeNode {
     dataFavouriteValue: boolean;
     dataTotalDocsValue: number;
     dataSearchFieldsValues: string[];
-    children: TreeNode[];
+    children: ITreeNode[];
     originalData: any;
-    parent?: TreeNode;
+    parent?: ITreeNode;
     isLeaf: boolean;
     hasChildren: boolean;
 }
