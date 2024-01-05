@@ -63,7 +63,7 @@ export class AppComponent implements OnInit {
     isSingularInput: false,
     isReadonly: false,
     isCustomInputAllowed: true,
-    isSearchAllowed: true,
+    isSearchAllowed: false,
     isAsynchronousSearchAllowed: true,
     isClientSideSearchAllowed: true,
     isResetOptionVisible: true,
@@ -84,7 +84,7 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
     // this.makeAPICall();
-    !!this.preSelectedChips && this.getPreselectedValues();
+    // !!this.preSelectedChips && this.getPreselectedValues();
   }
 
   public getPreselectedValues() {
@@ -98,7 +98,7 @@ export class AppComponent implements OnInit {
               dataVisibleNameSrc: "resourceName",
             }, true)));
             console.log(this.t1PreselectedArr);
-            
+
             console.log(data);
             data.push({
               "resourceName": "Favourite Folders",
@@ -142,7 +142,7 @@ export class AppComponent implements OnInit {
         TreeUtility.propertyAdd(sectionHeader, this.sectionDataToPass.dataUniqueFieldSrc, "1");
         TreeUtility.propertyAdd(sectionHeader, this.sectionDataToPass.dataVisibleNameSrc, "Folders");
         this.sectionDataToPass.dataTooltipSrc && TreeUtility.propertyAdd(sectionHeader, this.sectionDataToPass.dataTooltipSrc, "Select Folders");
-        let treeSection1: IDropdownTree = TreeUtility.createExpliciteDropdownTree(sectionHeader, this.sectionDataToPass, this.t1PreselectedArr);
+        let treeSection1: IDropdownTree = TreeUtility.createExpliciteDropdownTree(sectionHeader, this.sectionDataToPass, this.preSelectedChips.length > 0 ? this.t1PreselectedArr : undefined);
         value.forEach((element: any) => {
           treeSection1.insert("1", element);
         });
@@ -163,7 +163,7 @@ export class AppComponent implements OnInit {
         TreeUtility.propertyAdd(customOptionsSectionHeader, this.sectionDataToPass.dataUniqueFieldSrc, "0");
         this.sectionDataToPass.dataTooltipSrc && TreeUtility.propertyAdd(customOptionsSectionHeader, this.sectionDataToPass.dataVisibleNameSrc, "Custom");
         this.sectionDataToPass.dataTooltipSrc && TreeUtility.propertyAdd(customOptionsSectionHeader, this.sectionDataToPass.dataTooltipSrc, "Custom");
-        let treeSection2: IDropdownTree = TreeUtility.createExpliciteDropdownTree(customOptionsSectionHeader, this.sectionDataToPass, this.t2PreselectedArr.map((data) => TreeUtility.createExpliciteDropdownTreeNode(data, this.sectionDataToPass, true)));
+        let treeSection2: IDropdownTree = TreeUtility.createExpliciteDropdownTree(customOptionsSectionHeader, this.sectionDataToPass, this.preSelectedChips.length > 0 ? this.t2PreselectedArr.map((data) => TreeUtility.createExpliciteDropdownTreeNode(data, this.sectionDataToPass, true)) : undefined);
         customFolderOptions.forEach((element: any) => {
           treeSection2.insert("0", element);
         });
@@ -183,27 +183,27 @@ export class AppComponent implements OnInit {
     console.log(message);
   }
 
-  public async finalDataReceived(data: any[]) {
+  public async finalDataReceived(data: TreeNode[]) {
     console.log(data);
     this.receivedData = data;
-    // if(data.length > 0) {
+    // if (data.length > 0) {
     //   this.projectValidationXHR = true;
     //   await this.validateProject();
     //   this.projectValidationXHR = false;
     //   data[0].isInvalid = true;
-    //   this.customInvalidMessageKey = 'policy-already-applied'
-    //   this.isSelectionValid = false;  
+    //   this.isSelectionValid = false;
+    //   this.sectionDataToPass.invalidMessageKey = 'policy-already-applied'
     // }
     // else {
     //   this.projectValidationXHR = false;
     //   this.isSelectionValid = true;
     // }
-    // // for(let d in data) {
-    // //   if(data[d].dataUniqueFieldValue === "112278799$$QcxN3S")
-    // //     data[d].isInvalid = true;
-    // //     this.invalidMessage = "should not be herer"
-    // // }
-    // console.log('bbb');
+    for(let d in data) {
+      if(data[d].dataVisibleNameValue === "aaa")
+        data[d].isInvalid = true;
+        this.sectionDataToPass.invalidMessageKey = "should not be herer"
+    }
+    console.log('bbb');
   }
 
   public async validateProject(): Promise<boolean> {
@@ -261,6 +261,15 @@ export class AppComponent implements OnInit {
       next: (data) => { requestData.onResult(data) },
       error: () => { requestData.onError!() }
     });
+  }
+
+  public disable() {
+    console.log(this.dataToPass);
+    let node = this.dataToPass[1].findNodeFromId("112279183$$CUvnW2");
+    console.log(node?.isDisabled);
+    node && (node.isDisabled = !node.isDisabled);
+    console.log(node?.isDisabled);
+
   }
 
 }

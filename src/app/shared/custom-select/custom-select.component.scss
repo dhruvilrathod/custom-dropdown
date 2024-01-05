@@ -1,11 +1,12 @@
-.container {
+.dropdown-container {
     border: 1px solid #ccc;
     border-radius: 4px;
-    padding: 4px;
+    padding: 6px;
     white-space: normal;
     min-height: 20px;
     line-height: 1;
     transition: all 200ms;
+    width: 100%;
     cursor: text;
 
     &.section-invalid {
@@ -20,12 +21,18 @@
         }
     }
 
-    .wrapper {
+    .dropdown-wrapper {
         font-size: 14px;
         display: flex;
         gap: 8px;
         justify-content: center;
         flex-direction: column;
+
+        input {
+            box-shadow: none !important;
+            border: none;
+            outline: none;
+        }
     }
 
     &.search-not-allowed {
@@ -36,7 +43,7 @@
         opacity: 0.6;
         cursor: not-allowed;
 
-        .wrapper {
+        .dropdown-wrapper {
             pointer-events: none;
         }
     }
@@ -44,7 +51,7 @@
     &.container-read-only {
         cursor: default;
 
-        .wrapper {
+        .dropdown-wrapper {
             pointer-events: none;
         }
     }
@@ -59,6 +66,10 @@
         font-size: 14px;
         border: none;
         outline: none;
+
+        &[readonly] {
+            background-color: unset !important;
+        }
 
         &.search-not-allowed {
             cursor: pointer;
@@ -88,8 +99,10 @@
     font-size: 14px;
     transition: all 200ms;
     min-width: 300px;
+    min-height: 24px;
     max-height: 400px;
     overflow: auto;
+    box-shadow: rgba(0, 0, 0, 0.3) 0px 3px 7px 0px;
 
     .action-button-container {
         display: flex;
@@ -106,7 +119,7 @@
                 cursor: pointer;
                 background: none;
                 transition: all 200ms;
-                color: #3b73af;
+                color: var(--primary-btn-bg);
                 font-style: italic;
 
                 &:hover {
@@ -122,7 +135,7 @@
         font-weight: 600;
         border-top: 1px solid #aaa;
         border-bottom: 1px solid #aaa;
-        padding: 4px;
+        padding: 8px;
         align-items: center;
 
         label {
@@ -130,6 +143,8 @@
             display: inline-block;
             overflow: hidden;
             white-space: nowrap;
+            margin: 0px;
+            font-weight: inherit;
         }
 
         .selectable {
@@ -160,8 +175,8 @@
                 background-color: #fff;
                 display: flex;
                 align-items: center;
-                gap: 4px;
-                padding: 4px;
+                gap: 8px;
+                padding: 8px;
 
 
                 &:hover {
@@ -172,8 +187,7 @@
 
 
             .icon-container {
-                
-                border-radius: 4px;
+
                 display: flex;
                 justify-content: center;
                 align-items: center;
@@ -202,20 +216,24 @@
                     overflow: hidden;
                     white-space: nowrap;
                     cursor: pointer;
-
+                    margin: 0;
                 }
                 &.disabled-label>label {
                     cursor: not-allowed;
                     opacity: 0.5;
                 }
-
             }
 
-            input[type=checkbox] {
-                cursor: pointer;
+            .checkbox-container {
+                line-height: unset !important;
 
-                &:disabled {
-                    cursor: not-allowed;
+                input[type=checkbox] {
+                    cursor: pointer;
+                    margin: 0;
+    
+                    &:disabled {
+                        cursor: not-allowed;
+                    }
                 }
             }
         }
@@ -227,4 +245,13 @@
     width: 100%;
     padding: 4px 0;
     text-align: center;
+}
+
+::ng-deep .popover {
+    margin: 6px 0 !important;
+    max-width: unset;
+    border: none;
+    box-shadow: none;
+    -webkit-box-shodow: none;
+    -moz-box-shodow: none;
 }

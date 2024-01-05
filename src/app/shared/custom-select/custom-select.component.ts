@@ -29,6 +29,7 @@ export class CustomSelectComponent implements OnInit, OnDestroy {
 	@Input('preSelectedChips') get preSelectedChips(): TreeNode[] { return this._preSelectedChipsHolder; };
 	@Input('dropdownFormControl') dropdownFormControl: AbstractControl = new FormControl();
 	@Input('externalValidation') externalValidation: boolean = true;
+	@Input('isDropdownDisabled') isDropdownDisabled: boolean = false;
 
 	@Output('selectionChange') selectionChange: EventEmitter<TreeNode[]> = new EventEmitter<TreeNode[]>();
 	@Output('initialLoad') initialLoad: EventEmitter<boolean> = new EventEmitter<boolean>();
@@ -63,7 +64,6 @@ export class CustomSelectComponent implements OnInit, OnDestroy {
 	private _primaryDataHolder: IDropdownTree[] = [];
 	private _preSelectedChipsHolder: TreeNode[] = [];
 	private _initiallyRemovedChipIdsHolder: (string | number)[] = [];
-	private _queryAddedChipIdsHolder: (string | number)[] = [];
 	private _isDropdownCloseAllowed: boolean = true;
 
 	constructor() { }
@@ -197,7 +197,7 @@ export class CustomSelectComponent implements OnInit, OnDestroy {
 		this.computedWidth = `${parseInt(window.getComputedStyle(this.topContainer.nativeElement).width) + 8}px`;
 		setTimeout(() => {
 			if (this.queryBox) {
-				if (this.sectionConfigData.isSearchAllowed) {
+				if (this.sectionConfigData.isSearchAllowed || this.sectionConfigData.isCustomInputAllowed) {
 					this.queryBox.nativeElement.focus();
 				}
 				else {
@@ -210,7 +210,7 @@ export class CustomSelectComponent implements OnInit, OnDestroy {
 
 	public queryTrigger(searchVal: string): void {
 
-		if (this.globalLoading) return;
+		if (this.globalLoading || !this.sectionConfigData.isSearchAllowed) return;
 
 		!this.popoverInstance.isOpen() && this.popoverInstance.open();
 		this.multiObjectDataForQuery = [TreeUtility.createExpliciteDropdownTree({}, this.sectionConfigData)];
@@ -276,7 +276,7 @@ export class CustomSelectComponent implements OnInit, OnDestroy {
 		if (name === '' || name === undefined || name === null) {
 			return;
 		}
-		else {
+		else if(this.sectionConfigData.isSearchAllowed) {
 			this.queryState = true;
 		}
 

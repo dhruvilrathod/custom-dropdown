@@ -1,6 +1,8 @@
 <br>
 <button (click)="isVisible = !isVisible">close</button>
 <br>
+<button (click)="disable()">disable</button>
+<br>
 <div>
     <ng-container *ngFor="let d of receivedData">
         {{ d.dataVisibleNameValue }} <br>
@@ -58,6 +60,7 @@
         [sectionConfigData]="sectionDataToPass"
         [preSelectedChips]="preSelectedChips"
         [externalValidation]="isSelectionValid"
+        [isDropdownDisabled]="projectValidationXHR"
 
         (errorMessage)="errorOccured($event)"
         (selectionChange)="finalDataReceived($event)"
