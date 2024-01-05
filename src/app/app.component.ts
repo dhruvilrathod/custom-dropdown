@@ -63,7 +63,7 @@ export class AppComponent implements OnInit {
     isSingularInput: false,
     isReadonly: false,
     isCustomInputAllowed: true,
-    isSearchAllowed: false,
+    isSearchAllowed: true,
     isAsynchronousSearchAllowed: true,
     isClientSideSearchAllowed: true,
     isResetOptionVisible: true,
@@ -84,7 +84,7 @@ export class AppComponent implements OnInit {
 
   ngOnInit(): void {
     // this.makeAPICall();
-    // !!this.preSelectedChips && this.getPreselectedValues();
+    !!this.preSelectedChips && this.getPreselectedValues();
   }
 
   public getPreselectedValues() {

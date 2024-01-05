@@ -363,9 +363,11 @@ export class CustomSelectComponent implements OnInit, OnDestroy {
 					let preSelectedIndex = this._preSelectedChipsHolder.findIndex((val) => val.dataUniqueFieldValue === nodeRef.dataUniqueFieldValue);
 					preSelectedIndex > -1 && this._preSelectedChipsHolder.splice(preSelectedIndex, 1);
 				}
+				this._sendLatestDropdownSelection();
 			}
 			else {
-				treeRef.nodeSelection(nodeRef.dataUniqueFieldValue, selectionVal)
+				treeRef.nodeSelection(nodeRef.dataUniqueFieldValue, selectionVal);
+				this._updateChipData();
 			}
 
 		}
