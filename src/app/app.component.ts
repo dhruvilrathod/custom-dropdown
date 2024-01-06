@@ -9,6 +9,7 @@ import { TreeUtility } from './shared/utility/tree/TreeUtility';
 import { TreeNode } from './shared/utility/tree/TreeNode';
 import { ITreeNode } from './shared/interfaces/tree.interface';
 import { cloneDeep } from 'lodash';
+import { CustomSelectComponent } from './shared/custom-select/custom-select.component';
 
 @Component({
   selector: 'app-root',
@@ -17,7 +18,7 @@ import { cloneDeep } from 'lodash';
 })
 export class AppComponent implements OnInit {
 
-  @ViewChild('myDropdown', { static: true }) myDropdown!: MultiObjectSelectionComponent;
+  @ViewChild('myDropdown') myDropdown!: CustomSelectComponent;
 
   title = 'custom-dropdown';
 
@@ -55,11 +56,12 @@ export class AppComponent implements OnInit {
     dataTotalDocsSrc: DataTotalDocsSrcFields.FOLDER_SELECTION,
     dataParentUniqueIdsSrc: DataPathIdsSrcFields.FOLDER_SELECTION,
     dataDisabledSrc: DataDisabledSrcFields.FOLDER_SELECTION,
+    dataSearchFieldsSrc: ["folderId"],
     isSectionSelectionAllowed: true,
     isRequired: true,
     isDisabled: this.projectValidationXHR,
     minSelectCount: 1,
-    maxSelectCount: -3,
+    maxSelectCount: 2,
     isSingularInput: false,
     isReadonly: false,
     isCustomInputAllowed: true,
@@ -100,10 +102,10 @@ export class AppComponent implements OnInit {
             console.log(this.t1PreselectedArr);
 
             console.log(data);
-            data.push({
-              "resourceName": "Favourite Folders",
-              "resourceId": "-2",
-            });
+            // data.push({
+            //   "resourceName": "Favourite Folders",
+            //   "resourceId": "-2",
+            // });
             this.preSelectedChips = data.map((val: any) => TreeUtility.createExpliciteDropdownTreeNode(val, {
               dataUniqueFieldSrc: "resourceId",
               dataVisibleNameSrc: "resourceName",
@@ -168,8 +170,8 @@ export class AppComponent implements OnInit {
           treeSection2.insert("0", element);
         });
 
+        this.dataToPass = [treeSection1];
         // this.dataToPass = [treeSection2, treeSection1];
-        this.dataToPass = [treeSection2, treeSection1];
 
       },
       error: (err) => { console.log(err); },
@@ -270,6 +272,12 @@ export class AppComponent implements OnInit {
     node && (node.isDisabled = !node.isDisabled);
     console.log(node?.isDisabled);
 
+  }
+
+  public reset() {
+    console.log(this.myDropdown);
+    
+    this.myDropdown.selectAllOptions(true)
   }
 
 }

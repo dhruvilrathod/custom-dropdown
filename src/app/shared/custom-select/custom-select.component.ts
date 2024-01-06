@@ -69,6 +69,7 @@ export class CustomSelectComponent implements OnInit, OnDestroy {
 	constructor() { }
 
 	ngOnInit(): void {
+		this._init();
 	}
 
 	ngOnDestroy(): void {
@@ -102,6 +103,7 @@ export class CustomSelectComponent implements OnInit, OnDestroy {
 
 					}
 				}
+				this._updateChipData();
 			}
 
 			this.isLoading = false;
@@ -112,7 +114,6 @@ export class CustomSelectComponent implements OnInit, OnDestroy {
 		if (value && value.length && value.length > 0) {
 			this._preSelectedChipsHolder = value;
 			this.chipData.push(...value);
-			this._updateChipData();
 		}
 	}
 
@@ -276,7 +277,7 @@ export class CustomSelectComponent implements OnInit, OnDestroy {
 		if (name === '' || name === undefined || name === null) {
 			return;
 		}
-		else if(this.sectionConfigData.isSearchAllowed) {
+		else if (this.sectionConfigData.isSearchAllowed) {
 			this.queryState = true;
 		}
 
@@ -413,7 +414,7 @@ export class CustomSelectComponent implements OnInit, OnDestroy {
 
 							if (checkNode && this.sectionConfigData.isAsynchronousSearchAllowed && this.queryAddedData.length > 0) {
 								let queryAddedDataIndex = this.queryAddedData.findIndex((n) => n.dataUniqueFieldValue === checkNode!.dataUniqueFieldValue);
-								if(queryAddedDataIndex > -1) {
+								if (queryAddedDataIndex > -1) {
 									this.queryAddedData.splice(queryAddedDataIndex, 1);
 									checkNode.isSelected = true;
 								}
@@ -470,9 +471,9 @@ export class CustomSelectComponent implements OnInit, OnDestroy {
 		this.invalidState = this._validateChipDataLength(selectionNodes);
 		this.selectionChange.emit(selectionNodes);
 		if (this.sectionConfigData.isSingularInput && selectionNodes.length === 1) {
-			this.popoverInstance.close();
+			this._preventDropdownStateChange();
 		}
-		if (this.sectionConfigData.maxSelectCount !== undefined && this.sectionConfigData.maxSelectCount > 0 && selectionNodes.length === this.sectionConfigData.maxSelectCount) {
+		if (this.sectionConfigData.maxSelectCount !== undefined && this.sectionConfigData.maxSelectCount > 1 && selectionNodes.length === this.sectionConfigData.maxSelectCount) {
 			this.popoverInstance.close();
 		}
 		if (this.chipData && this.chipData.length && this.chipData.length > 0) {
@@ -503,6 +504,24 @@ export class CustomSelectComponent implements OnInit, OnDestroy {
 		}
 		else {
 			this._isDropdownCloseAllowed = true;
+		}
+	}
+
+	private _init(): void {
+		if (this.sectionConfigData) {
+			if (this.sectionConfigData.isRequired === true && (!this.sectionConfigData.minSelectCount || this.sectionConfigData.minSelectCount < 1)) {
+				this.sectionConfigData.minSelectCount = 1;
+			}
+			if (this.sectionConfigData.isSingularInput && (!this.sectionConfigData.maxSelectCount || this.sectionConfigData.maxSelectCount > 1)) {
+				this.sectionConfigData.maxSelectCount = 1;
+			}
+			if(this.sectionConfigData.minSelectCount === 1 && this.sectionConfigData.maxSelectCount === 1) {
+				this.sectionConfigData.maxSelectCount = -1;
+				this.sectionConfigData.isSingularInput = true;
+			}
+			if (!this.sectionConfigData.isMultipleLevel) {
+				this.sectionConfigData.isHierarchySelectionModificationAllowed = false;
+			}
 		}
 	}
 }

@@ -110,7 +110,7 @@ export class Tree implements ITree {
             if (dataSearchFieldsValuesLen > 0 && node.levelIndex !== undefined && node.levelIndex > 0) {
                 for (let i = 0; i < dataSearchFieldsValuesLen; i++) {
 
-                    let accessedValue = TreeUtility.propertyAccess(node.originalData, node.dataSearchFieldsValues[i]).toString().toLowerCase().trim();
+                    let accessedValue = TreeUtility.propertyAccess(node.originalData, node.dataSearchFieldsValues[i])?.toString().toLowerCase().trim();
                     if (!(!accessedValue || typeof accessedValue !== "string" || accessedValue === "" || accessedValue === null) && accessedValue.includes(searchQuery)) {
                         searchNodes.push(node);
                         break;

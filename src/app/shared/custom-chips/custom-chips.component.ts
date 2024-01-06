@@ -6,7 +6,7 @@ import { ITreeNode } from '../interfaces/tree.interface';
 	templateUrl: './custom-chips.component.html',
 	styleUrls: ['./custom-chips.component.scss']
 })
-export class CustomChipsComponent implements OnInit, AfterViewInit, OnDestroy {
+export class CustomChipsComponent implements OnInit, OnDestroy {
 
 	@ViewChild('chipsContainer') chipsContainer!: ElementRef<HTMLUListElement>;
 	@ViewChild('chip') chip!: ElementRef<HTMLLIElement>;
@@ -26,9 +26,6 @@ export class CustomChipsComponent implements OnInit, AfterViewInit, OnDestroy {
 	constructor() { }
 
 	ngOnInit(): void {
-	}
-
-	ngAfterViewInit(): void {
 		this._registerListeners();
 	}
 

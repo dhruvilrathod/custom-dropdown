@@ -24,11 +24,6 @@ export class TreeNode implements ITreeNode {
     originalData: any;
     parent?: TreeNode;
 
-    onExpand!: Function;
-    onCollaps!: Function;
-    onSelect!: Function;
-    onDeselect!: Function;
-
     constructor(value: any, config: ITreeFieldsSrcConfigurations, parent?: TreeNode, levelIndex: number = 0) {
 
         // fields which are related to identity of the node, possibly acquiring no changes at runtime
@@ -41,7 +36,7 @@ export class TreeNode implements ITreeNode {
         this.dataExpandableValue = config.dataExpandableSrc !== undefined ? TreeUtility.propertyAccess(value, config.dataExpandableSrc) || false : false;
         this.dataFavouriteValue = config.dataFavouriteSrc !== undefined ? TreeUtility.propertyAccess(value, config.dataFavouriteSrc) || false : false;
         this.dataTotalDocsValue = config.dataTotalDocsSrc !== undefined ? TreeUtility.propertyAccess(value, config.dataTotalDocsSrc) || 0 : 0;
-        this.dataSearchFieldsValues = config.dataSearchFieldsSrc && config.dataSearchFieldsSrc.length > 0 ? config.dataSearchFieldsSrc : [];
+        this.dataSearchFieldsValues = config.dataSearchFieldsSrc && config.dataSearchFieldsSrc.length > 0 ? [config.dataVisibleNameSrc].concat(...config.dataSearchFieldsSrc) : [config.dataVisibleNameSrc];
         this.originalData = value;
 
         // fields which are used to manage UI states and functionalities at the runtime

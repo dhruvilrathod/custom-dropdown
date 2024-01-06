@@ -10,21 +10,25 @@
             (contextmenu)="openContextMenu($event, c)"
             #chip>
         
-            <div *ngIf="c.isFavourite" class="left-section" [title]="'favorite'">
+            <div *ngIf="c.isFavourite" class="left-section" [title]="'favourite'">
                 <i class="fa fa-star"></i>
             </div>
         
-            <div class="main-section">
+            <div class="main-section" [title]="c.dataTooltipValue ? c.dataTooltipValue : c.dataVisibleNameValue">
                 {{ c.dataVisibleNameValue }}
             </div>
         
-            <div class="right-section" (click)="removeChip(c); $event.stopPropagation()" *ngIf="!(c.isReadOnly || c.isDisabled)">
+            <div 
+                *ngIf="!(c.isReadOnly || c.isDisabled)"
+                [title]="'remove'"
+                class="right-section" 
+                (click)="removeChip(c); $event.stopPropagation()" 
+                >
                 <i class="fa fa-close"></i>
             </div>
         
         </li>
 
     </ng-container>
-
 
 </ul>
