@@ -103,7 +103,7 @@ export class CustomSelectComponent implements OnInit, OnDestroy {
 
 					}
 				}
-				this._updateChipData();
+				this._updateChipData(undefined, true);
 			}
 
 			this.isLoading = false;
@@ -431,7 +431,7 @@ export class CustomSelectComponent implements OnInit, OnDestroy {
 		}
 	}
 
-	private _updateChipData(rearrangeChipData: boolean = true): void {
+	private _updateChipData(rearrangeChipData: boolean = true, preventCloseDropdownAfterPreselection: boolean = false): void {
 
 		// adding regular selected chips from dropdown
 		if (rearrangeChipData) {
@@ -459,10 +459,10 @@ export class CustomSelectComponent implements OnInit, OnDestroy {
 			this.chipData.push(...this.queryAddedData);
 		}
 
-		this._sendLatestDropdownSelection();
+		this._sendLatestDropdownSelection(preventCloseDropdownAfterPreselection);
 	}
 
-	private _sendLatestDropdownSelection(): void {
+	private _sendLatestDropdownSelection(preventCloseDropdownAfterPreselection: boolean = false): void {
 		let selectionNodes: ITreeNode[] = [];
 		for (let i = 0, chipDataLen = this.chipData.length; i < chipDataLen; i++) {
 			!this.chipData[i].isCustom && selectionNodes.push(this.chipData[i]);
@@ -471,7 +471,7 @@ export class CustomSelectComponent implements OnInit, OnDestroy {
 		this.invalidState = this._validateChipDataLength(selectionNodes);
 		this.selectionChange.emit(selectionNodes);
 		if (this.sectionConfigData.isSingularInput && selectionNodes.length === 1) {
-			this._preventDropdownStateChange();
+			!preventCloseDropdownAfterPreselection && this._preventDropdownStateChange();
 		}
 		if (this.sectionConfigData.maxSelectCount !== undefined && this.sectionConfigData.maxSelectCount > 1 && selectionNodes.length === this.sectionConfigData.maxSelectCount) {
 			this.popoverInstance.close();
