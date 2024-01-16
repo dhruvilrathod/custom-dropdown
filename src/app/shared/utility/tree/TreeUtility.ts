@@ -34,14 +34,15 @@ export class TreeUtility {
         let currentLevel = dataObj;
 
         for (let k = 0, pathArrLen = pathArr.length; k < pathArrLen; k++) {
-            if (k < pathArrLen - 1) {
+            if (k < pathArrLen) {
                 if (!currentLevel[pathArr[k]]) {
                     currentLevel[pathArr[k]] = {}
+                    if (k === pathArrLen - 1) {
+                        currentLevel[pathArr[k]] = value;
+                        break;
+                    }
                 }
                 currentLevel = currentLevel[pathArr[k]];
-            }
-            else {
-                dataObj[pathArr[k]] = value;
             }
         }
 
