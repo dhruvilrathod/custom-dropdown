@@ -2,7 +2,7 @@ import { DropdownTree } from './DropdownTree';
 import { TreeNode } from './TreeNode';
 import { IDropDownTreeConfig, IDropdownTree } from '../../interfaces/custom-select.inteface';
 import { TreeUtility } from './TreeUtility';
-fdescribe('DropdownTree', () => {
+describe('DropdownTree', () => {
     let config: IDropDownTreeConfig;
     let rootData: any;
     let dropdownTree: IDropdownTree;
