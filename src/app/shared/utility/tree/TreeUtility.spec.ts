@@ -144,3 +144,11 @@ describe('TreeUtility', () => {
 
     });
 });
+
+export function generateMockTreeNodes(count: number): TreeNode[] {
+    const nodes: TreeNode[] = [];
+    for (let i = 1; i <= count; i++) {
+        nodes.push(new TreeNode({ id: i.toString(), name: "asdf" }, { dataUniqueFieldSrc: "id", dataVisibleNameSrc: "name" }));
+    }
+    return nodes;
+}
